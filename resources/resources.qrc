@@ -1,0 +1,37 @@
+<RCC>
+    <qresource prefix="/">
+        <file>qml/Ui/MainWindow.qml</file>
+        <file>qml/Ui/ApplicationHeader.qml</file>
+        <file>qml/Ui/UiButton.qml</file>
+        <file>qml/Ui/UiCheckbox.qml</file>
+        <file>qml/Ui/fontawesome.js</file>
+        <file>qml/Ui/Icon.qml</file>
+        <file>qml/Ui/UiLabel.qml</file>
+        <file>qml/Ui/ApplicationMenuItem.qml</file>
+        <file>qml/Ui/ScrollView.qml</file>
+        <file>qml/Ui/SplitView.qml</file>
+        <file>qml/Ui/TabView.qml</file>
+        <file>qml/Ui/TagLabel.qml</file>
+        <file>qml/Ui/ApplicationTextEdit.qml</file>
+        <file>qml/Ui/TextInput.qml</file>
+        <file>qml/Ui/CodeEditor.qml</file>
+        <file>qml/Ui/CodeEditorError.qml</file>
+        <file>qml/Ui/CodeEditorFooter.qml</file>
+        <file>qml/Ui/CodeEditorSearch.qml</file>
+        <file>qml/Ui/CodeEditorSearchInput.qml</file>
+        <file>fonts/fontawesome-webfont.ttf</file>
+        <file>qml/Ui/ApplicationMenu.qml</file>
+        <file>qml/Ui/ApplicationStatusBar.qml</file>
+        <file>qml/Ui/ApplicationLogger.qml</file>
+        <file>qml/Ui/TelimetryPopup.qml</file>
+        <file>images/mur_logo256.png</file>
+        <file>qml/Ui/AboutPopup.qml</file>
+        <file>qml/Ui/RemoteView.qml</file>
+        <file>qml/Ui/GamepadSettings.qml</file>
+        <file>qml/Ui/AutoCompliter.qml</file>
+        <file>images/video_placeholder.png</file>
+        <file>help/help.html</file>
+        <file>images/mur_ide_elements.png</file>
+        <file>qml/Ui/UpdatePopup.qml</file>
+    </qresource>
+</RCC>
