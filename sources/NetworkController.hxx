@@ -6,6 +6,7 @@
 #include <QObject>
 #include <QTimer>
 #include <QWebSocket>
+#include "APITokenDialog.hxx"
 
 namespace Ide::Ui {
 class NetworkController : public QObject
@@ -21,6 +22,12 @@ class NetworkController : public QObject
     Q_PROPERTY(double roll READ getRoll NOTIFY telimetryUpdated)
     Q_PROPERTY(double depth READ getDepth NOTIFY telimetryUpdated)
     Q_PROPERTY(double pressure READ getPressure NOTIFY telimetryUpdated)
+    Q_PROPERTY(bool usv READ isUsv NOTIFY telimetryUpdated)
+    Q_PROPERTY(double latitude READ getLatitude NOTIFY telimetryUpdated)
+    Q_PROPERTY(double longitude READ getLongitude NOTIFY telimetryUpdated) //altitude
+    Q_PROPERTY(double satellites READ getSatellites NOTIFY telimetryUpdated)
+    Q_PROPERTY(double altitude READ getAltitude NOTIFY telimetryUpdated)
+    Q_PROPERTY(double speed READ getSpeed NOTIFY telimetryUpdated)
 
 public:
     static NetworkController *instance;
@@ -35,6 +42,13 @@ public:
     double getRoll();
     double getDepth();
     double getPressure();
+    bool isUsv();
+    double getLatitude();
+    double getLongitude();
+    double getSatellites();
+    double getAltitude();
+    double getSpeed();
+
 
     void setRemoteThrust(const QString &);
 
@@ -58,12 +72,14 @@ private:
     void onPongReceived(quint64, const QByteArray &);
     void onPingTimeout();
     void onPongTimeout();
+    void onTokenAccepted();
 
     Ide::IO::Telemetry m_telimetry;
     QWebSocket *m_webSocket;
     QTimer *m_reconnectionTimer;
     QTimer *m_pingTimer;
     QTimer *m_pongTimer;
+    ApiTokenDialog* m_ApiTokenDialog;
 };
 
 } // namespace ide::ui

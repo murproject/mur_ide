@@ -12,6 +12,7 @@
 #include <QQmlApplicationEngine>
 #include <QSurfaceFormat>
 #include <QWindow>
+#include <QtWebEngine>
 
 namespace Ide::Ui {
 
@@ -21,6 +22,7 @@ QString Application::m_resourceDirectory = {};
 int Application::execute(int argc, char **argv)
 {
     QApplication app(argc, argv);
+    QtWebEngine::initialize();
 
     if (instance == nullptr) {
         instance = new Application;

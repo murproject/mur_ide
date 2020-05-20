@@ -48,7 +48,7 @@ Popup {
 
                color: "#2B68A4";
                width: Math.min(200, contentWidth)
-               text: qsTr("murIDE v0.0.5. Powered by: <a href=\"https://www.qt.io/\">Qt</a>, <a href=\"https://opencv.org/\">OpenCV</a>,
+               text: qsTr("murIDE v0.0.7. Powered by: <a href=\"https://www.qt.io/\">Qt</a>, <a href=\"https://opencv.org/\">OpenCV</a>,
                            <a href=\"https://gstreamer.freedesktop.org/\">GStreamer</a> and <a href=\"https://www.python.org/\">Python</a>");
                wrapMode: Text.WordWrap
                onLinkActivated: Qt.openUrlExternally(link);

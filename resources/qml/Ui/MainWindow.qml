@@ -1,8 +1,7 @@
 import QtQuick 2.11
 import QtQuick.Controls 2.4
 import QtQml 2.2
-import QtWebView 1.0
-
+import QtWebView 1.1
 
 ApplicationWindow {
     id: root;

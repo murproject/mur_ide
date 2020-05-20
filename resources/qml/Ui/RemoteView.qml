@@ -69,9 +69,10 @@ Rectangle {
         anchors.top: remoteHeader.bottom;
         anchors.right: parent.right;
         anchors.bottom: remoteFooter.top;
+
         Rectangle {
             id: front;
-            implicitHeight: parent.height / 2;
+            implicitHeight: Controllers.network.usv ? parent.height : parent.height / 2;
             implicitWidth:  parent.width;
 
             MouseArea {
@@ -91,8 +92,9 @@ Rectangle {
 
         Rectangle {
             id: bottom;
+            visible: !Controllers.network.usv;
             implicitHeight: parent.height / 2;
-            implicitWidth:  parent.width;
+            implicitWidth: parent.width;
 
             MouseArea {
                 anchors.fill: parent;

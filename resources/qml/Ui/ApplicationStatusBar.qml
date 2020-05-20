@@ -59,7 +59,7 @@ Rectangle {
         */
         UiLabel {
             anchors.verticalCenter: parent.verticalCenter;
-            text: "version: " + "0.0.5";
+            text: "version: " + "0.0.7";
         }
     }
 }

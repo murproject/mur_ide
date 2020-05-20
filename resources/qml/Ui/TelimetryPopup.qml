@@ -45,9 +45,50 @@ Popup {
                 color: "#F39C12";
             }
             Label {
+                visible: !Controllers.network.usv;
                 topPadding: 2;
                 bottomPadding: 2;
                 text: "Depth: ";// + Controllers.network.depth.toFixed(2);
+                color: "#F39C12";
+            }
+
+            /*
+            * USV
+            */
+
+            Label {
+                visible: Controllers.network.usv;
+                topPadding: 2;
+                bottomPadding: 2;
+                text: "Latitude: ";// + Controllers.network.depth.toFixed(2);
+                color: "#F39C12";
+            }
+            Label {
+                visible: Controllers.network.usv;
+                topPadding: 2;
+                bottomPadding: 2;
+                text: "Longitude: ";// + Controllers.network.depth.toFixed(2);
+                color: "#F39C12";
+            }
+            Label {
+                visible: Controllers.network.usv;
+                topPadding: 2;
+                bottomPadding: 2;
+                text: "Satellites: ";// + Controllers.network.depth.toFixed(2);
+                color: "#F39C12";
+            }
+            Label {
+                visible: Controllers.network.usv;
+                topPadding: 2;
+                bottomPadding: 2;
+                text: "Altitude: ";// + Controllers.network.depth.toFixed(2);
+                color: "#F39C12";
+            }
+            Label {
+                visible: Controllers.network.usv;
+                topPadding: 2;
+                bottomPadding: 2;
+                text: "Speed: ";// + Controllers.network.depth.toFixed(2);
                 color: "#F39C12";
             }
             Label {
@@ -84,11 +125,57 @@ Popup {
                 color: "#F39C12";
             }
             Label {
+                visible: !Controllers.network.usv;
                 topPadding: 2;
                 bottomPadding: 2;
                 text: Controllers.network.depth.toFixed(2);
                 color: "#F39C12";
             }
+
+            /*
+            * USV
+            */
+
+            Label {
+                visible: Controllers.network.usv;
+                topPadding: 2;
+                bottomPadding: 2;
+                text: Controllers.network.latitude.toFixed(2);
+                color: "#F39C12";
+            }
+
+            Label {
+                visible: Controllers.network.usv;
+                topPadding: 2;
+                bottomPadding: 2;
+                text: Controllers.network.longitude.toFixed(2);
+                color: "#F39C12";
+            }
+
+            Label {
+                visible: Controllers.network.usv;
+                topPadding: 2;
+                bottomPadding: 2;
+                text: Controllers.network.satellites.toFixed(0);
+                color: "#F39C12";
+            }
+
+            Label {
+                visible: Controllers.network.usv;
+                topPadding: 2;
+                bottomPadding: 2;
+                text: Controllers.network.altitude.toFixed(2);
+                color: "#F39C12";
+            }
+
+            Label {
+                visible: Controllers.network.usv;
+                topPadding: 2;
+                bottomPadding: 2;
+                text: Controllers.network.speed.toFixed(2);
+                color: "#F39C12";
+            }
+
             Label {
                 topPadding: 2;
                 bottomPadding: 2;

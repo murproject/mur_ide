@@ -40,7 +40,7 @@ Rectangle {
             toolTip: "Run code remote/local";
             label.text: Controllers.scripts.local ? "Local" : "Robot";
             highlight: Controllers.scripts.local;
-            icon: Controllers.scripts.local ? icons.fa_desktop : icons.fa_rocket;
+            icon: Controllers.scripts.local ? icons.fa_desktop : Controllers.network.usv ? icons.fa_ship : icons.fa_rocket;
             iconColor:  !Controllers.scripts.local ? Controllers.network.connected ? "#148F77" : "#E74C3C" : "#fff";
             onClicked: {
                 controller.onTargetModeChanged();

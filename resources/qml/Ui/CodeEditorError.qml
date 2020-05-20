@@ -23,8 +23,6 @@ Rectangle {
 
         label.text: error.message;
         label.font.pointSize: Controllers.editor.fontSize - 2;
-        label.leftPadding: 4;
-        label.rightPadding: 4;
 
         color: "#181A1F"
         border.color: root.color;

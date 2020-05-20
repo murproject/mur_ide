@@ -2,6 +2,7 @@
 #include "ApplicationLogger.hxx"
 #include "EditorController.hxx"
 #include "RemoteController.hxx"
+#include <QMessageBox>
 
 namespace Ide::Ui {
 
@@ -16,6 +17,7 @@ NetworkController::NetworkController()
     m_webSocket = new QWebSocket{};
     m_pingTimer = new QTimer{};
     m_pongTimer = new QTimer{};
+    m_ApiTokenDialog = new ApiTokenDialog{};
 
     m_reconnectionTimer = new QTimer{};
     m_reconnectionTimer->start(3000);
@@ -30,6 +32,7 @@ NetworkController::NetworkController()
     connect(m_webSocket, &QWebSocket::pong, this, &NetworkController::onPongReceived);
     connect(m_pongTimer, &QTimer::timeout, this, &NetworkController::onPongTimeout);
     connect(m_pingTimer, &QTimer::timeout, this, &NetworkController::onPingTimeout);
+    connect(m_ApiTokenDialog, &QDialog::accepted, this, &NetworkController::onTokenAccepted);
 }
 
 void NetworkController::onConnected()
@@ -71,8 +74,12 @@ void NetworkController::onTelimetryReceived(const QString &message)
 
     if ((object.contains("type") && object["type"].toString() == "telemetry")) {
         m_telimetry = Ide::IO::FromJson::telemetry(message);
-        qDebug() << object;
         emit telimetryUpdated();
+    }
+
+    if ((object.contains("type") && object["type"].toString() == "request_api_token")) {
+        ApplicationLogger::instance->addEntry("API token required");
+        m_ApiTokenDialog->open();
     }
 }
 
@@ -90,6 +97,14 @@ void NetworkController::onPingTimeout()
 void NetworkController::onPongTimeout()
 {
     onDisconnected();
+}
+
+void NetworkController::onTokenAccepted()
+{
+    if (!m_webSocket->isValid()) {
+        return;
+    }
+    m_webSocket->sendTextMessage(Ide::IO::ToJson::api_token(m_ApiTokenDialog->getBase64Token()));
 }
 
 double NetworkController::getBatteryStatus()
@@ -135,6 +150,36 @@ double NetworkController::getDepth()
 double NetworkController::getPressure()
 {
     return m_telimetry.pressure;
+}
+
+bool NetworkController::isUsv()
+{
+    return m_telimetry.is_usv;
+}
+
+double NetworkController::getLatitude()
+{
+    return m_telimetry.latitude;
+}
+
+double NetworkController::getLongitude()
+{
+    return m_telimetry.longitude;
+}
+
+double NetworkController::getSatellites()
+{
+    return m_telimetry.satellites;
+}
+
+double NetworkController::getAltitude()
+{
+    return m_telimetry.altitude;
+}
+
+double NetworkController::getSpeed()
+{
+    return m_telimetry.speed;
 }
 
 void NetworkController::setRemoteThrust(const QString &message)

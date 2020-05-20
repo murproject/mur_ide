@@ -7,7 +7,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_REQUIRED_FLAGS -std=c++17)
 
-set(OpenCV_DIR D:/lib/opencv/build/install)
+set(OpenCV_DIR C:/Libraries/LibOpenCV)
 
 
 find_package(OpenCV REQUIRED)
@@ -18,18 +18,16 @@ find_package(Qt5 REQUIRED COMPONENTS
         Widgets
         SerialPort
         WebSockets
+        WebEngine
         PrintSupport
         Qml
         Quick
         Gui
-        Webengine
         Gamepad
         Concurrent)
 
 add_executable(${PROJECT_NAME} WIN32 resources/icon.rc)
 #add_executable(${PROJECT_NAME} resources/icon.rc)
-
-target_include_directories(${PROJECT_NAME} PRIVATE ${SFML_INCLUDE_DIR})
 
 target_sources(${PROJECT_NAME}
         PRIVATE sources/main.cpp
@@ -80,7 +78,9 @@ target_sources(${PROJECT_NAME}
         PRIVATE sources/EditorHints.cpp
         PRIVATE sources/EditorHints.hxx
         PRIVATE sources/HintBase.cpp
-        PRIVATE sources/HintBase.hxx)
+        PRIVATE sources/HintBase.hxx
+        PRIVATE sources/ApiTokenDialog.cpp
+        PRIVATE sources/ApiTokenDialog.hxx)
 
 if (WIN32)
     target_sources(${PROJECT_NAME}
@@ -99,6 +99,7 @@ target_link_libraries(${PROJECT_NAME}
         PRIVATE Qt5::Widgets
         PRIVATE Qt5::WebSockets
         PRIVATE Qt5::PrintSupport
+        PRIVATE Qt5::WebEngine
         PRIVATE Qt5::Qml
         PRIVATE Qt5::Quick
         PRIVATE Qt5::Gui
