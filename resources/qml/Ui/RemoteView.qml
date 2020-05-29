@@ -56,6 +56,7 @@ Rectangle {
     }
 
     Rectangle {
+        id: spearator;
         anchors.left: parent.left;
         anchors.right: parent.right;
         anchors.bottom: remoteHeader.bottom;
@@ -66,7 +67,7 @@ Rectangle {
     Column {
         id: imageView;
         anchors.left: parent.left;
-        anchors.top: remoteHeader.bottom;
+        anchors.top: spearator.bottom;
         anchors.right: parent.right;
         anchors.bottom: remoteFooter.top;
 

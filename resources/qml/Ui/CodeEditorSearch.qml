@@ -78,10 +78,6 @@ Rectangle {
 
                 anchors.right: parent.right;
                 anchors.verticalCenter: parent.verticalCenter;
-
-                label.leftPadding: 4;
-                label.rightPadding: 4;
-
                 color: "#2B68A4"
                 visible: controller.matchCount;
 

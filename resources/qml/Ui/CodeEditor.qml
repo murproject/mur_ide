@@ -263,12 +263,12 @@ Rectangle {
 
     Connections {
         target: editor;
-        onClear: textEdit.clear();
+//        onClear: textEdit.clear();
     }
 
     Connections {
         target: editor;
-        onSelect: textEdit.select(start, end);
+//        onSelect: textEdit.select(start, end);
     }
 
     Component.onCompleted: {

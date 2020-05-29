@@ -32,19 +32,19 @@ Popup {
             UiButton {
                 anchors.verticalCenter: parent.verticalCenter;
                 frameless: false;
-                label.text: Controllers.image.gamepad.axisXName;
-                highlight: Controllers.image.gamepad.rebindX;
+                label.text: Controllers.image.Gamepad.axisXName;
+                highlight: Controllers.image.Gamepad.rebindX;
                 onClicked: {
-                    Controllers.image.gamepad.rebindAxisX();
+                    Controllers.image.Gamepad.rebindAxisX();
                 }
             }
             UiButton {
                 anchors.verticalCenter: parent.verticalCenter;
                 frameless: false;
-                highlight: Controllers.image.gamepad.inverseX;
-                label.text: Controllers.image.gamepad.inverseX ? "   Inversed  " : "Not inversed" ;
+                highlight: Controllers.image.Gamepad.inverseX;
+                label.text: Controllers.image.Gamepad.inverseX ? "   Inversed  " : "Not inversed" ;
                 onClicked: {
-                    Controllers.image.gamepad.inverseX = !Controllers.image.gamepad.inverseX;
+                    Controllers.image.Gamepad.inverseX = !Controllers.image.gamepad.inverseX;
                 }
             }
         }
@@ -57,20 +57,20 @@ Popup {
             UiButton {
                 anchors.verticalCenter: parent.verticalCenter;
                 frameless: false;
-                highlight: Controllers.image.gamepad.rebindY;
-                label.text: Controllers.image.gamepad.axisYName;
+                highlight: Controllers.image.Gamepad.rebindY;
+                label.text: Controllers.image.Gamepad.axisYName;
                 onClicked: {
-                    Controllers.image.gamepad.rebindAxisY();
+                    Controllers.image.Gamepad.rebindAxisY();
                 }
             }
 
             UiButton {
                 anchors.verticalCenter: parent.verticalCenter;
                 frameless: false;
-                highlight: Controllers.image.gamepad.inverseY;
-                label.text: Controllers.image.gamepad.inverseY ? "   Inversed  " : "Not inversed" ;
+                highlight: Controllers.image.Gamepad.inverseY;
+                label.text: Controllers.image.Gamepad.inverseY ? "   Inversed  " : "Not inversed" ;
                 onClicked: {
-                    Controllers.image.gamepad.inverseY = !Controllers.image.gamepad.inverseY;
+                    Controllers.image.Gamepad.inverseY = !Controllers.image.Gamepad.inverseY;
                 }
             }
         }
@@ -83,20 +83,20 @@ Popup {
             UiButton {
                 anchors.verticalCenter: parent.verticalCenter;
                 frameless: false;
-                highlight: Controllers.image.gamepad.rebindZ;
-                label.text: Controllers.image.gamepad.axisZName;
+                highlight: Controllers.image.Gamepad.rebindZ;
+                label.text: Controllers.image.Gamepad.axisZName;
                 onClicked: {
-                    Controllers.image.gamepad.rebindAxisZ();
+                    Controllers.image.Gamepad.rebindAxisZ();
                 }
             }
 
             UiButton {
                 anchors.verticalCenter: parent.verticalCenter;
                 frameless: false;
-                highlight: Controllers.image.gamepad.inverseZ;
-                label.text: Controllers.image.gamepad.inverseZ ? "   Inversed  " : "Not inversed" ;
+                highlight: Controllers.image.Gamepad.inverseZ;
+                label.text: Controllers.image.Gamepad.inverseZ ? "   Inversed  " : "Not inversed" ;
                 onClicked: {
-                    Controllers.image.gamepad.inverseZ = !Controllers.image.gamepad.inverseZ;
+                    Controllers.image.Gamepad.inverseZ = !Controllers.image.Gamepad.inverseZ;
                 }
             }
         }

@@ -24,8 +24,8 @@ void QMLImageItem::paint(QPainter *painter)
 {
     QRectF bounding_rect = boundingRect();
     painter->fillRect(bounding_rect, QColor("#282C34"));
-    QImage scaled = m_image.scaledToHeight(bounding_rect.height());
-
+    /* form v0.0.6: QImage scaled = m_image.scaledToHeight(bounding_rect.height()); */
+    QImage scaled = m_image.scaled(bounding_rect.width(), bounding_rect.height(), Qt::KeepAspectRatio);
     QPointF center = bounding_rect.center() - scaled.rect().center();
 
     if (center.x() < 0) {

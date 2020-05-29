@@ -41,7 +41,7 @@ Ide::IO::Telemetry telemetry(const QString &json)
         telemetry_local.latitude = latitude;
         telemetry_local.speed = speed;
         telemetry_local.altitude = altitude;
-
+        telemetry_local.is_usv = true;
         return telemetry_local;
     }
 
