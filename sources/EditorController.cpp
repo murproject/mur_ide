@@ -161,7 +161,11 @@ void EditorController::saveFile()
         saveFileAs();
     } else {
         m_about_to_be_saved = true;
-        IO::Write::textToFile(m_document->textDocument()->toPlainText(), m_fileUrl);
+        QString text = m_document->textDocument()->toPlainText();
+        if (!text.endsWith("\n")) {
+            text.append("\n");
+        }
+        IO::Write::textToFile(text, m_fileUrl);
     }
 }
 

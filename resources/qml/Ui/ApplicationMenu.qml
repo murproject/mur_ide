@@ -72,7 +72,7 @@ MenuBar {
         }
         title: qsTr("Settings");
         Action {
-            //enabled: Controllers.image.Gamepad.Gamepad.connected;
+            enabled: Controllers.image.Gamepad.Gamepad.connected;
             text: qsTr("Gamepad");
             onTriggered: {
                 if(gamepadPopupLoader.active) {
