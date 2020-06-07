@@ -44,7 +44,7 @@ Popup {
                 highlight: Controllers.image.Gamepad.inverseX;
                 label.text: Controllers.image.Gamepad.inverseX ? "   Inversed  " : "Not inversed" ;
                 onClicked: {
-                    Controllers.image.Gamepad.inverseX = !Controllers.image.gamepad.inverseX;
+                    Controllers.image.Gamepad.inverseX = !Controllers.image.Gamepad.inverseX;
                 }
             }
         }
