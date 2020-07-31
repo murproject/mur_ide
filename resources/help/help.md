@@ -165,7 +165,70 @@ angle, distance = auv.get_pinger_data(0)
 angle, distance = auv.get_pinger_data(3)
 ```
 
+### Работа с MiddleUSV
+
+API для работы с MiddleUSV очень похож, на API для работы с MiddleAUV. Ниже будут рассмотренны основные различия между ними.
 
 
+#### Программирование - инициализация
 
+Первым делом вам необходимо подключить библиотеку pymurapi. Для того, чтобы это сделать вызовите следующий код:
 
+```Python
+import pymurapi as mur
+```
+
+В дальнейшем mur будет использоваться в качестве алиаса на библиотеку pymurapi.
+
+Далее вам необходимо создать экземпляр объекта MurApiBase. Для этого вызовите функцию mur_init():
+
+```python
+usv = mur.usv_init()
+```
+
+#### Список функций и их описание специфичных для MiddleUSV
+
+#### Список функций специфичных для MiddleUSV
+
+```python
+def set_servo(angle):
+# С помощью данной функции можно установить угол поворота серво-камеры
+# аргумент angle - целое число от 0 до 180
+usv.set_servo(90)
+```
+```python
+def get_gps_satellites(self):
+# Функция возвращает количество видимых спутников GPS 
+sat = usv.get_gps_satellites()
+```
+```python
+def get_gps_alt(self):
+# Функция возвращает высоту по GPS
+alt = usv.get_gps_alt()
+```
+```python
+def get_gps_lat(self):
+# Функця возвращает широту по GPS
+lat = usv.get_gps_lat()
+```
+```python
+def get_gps_lng(self):
+# Функця возвращает долготу по GPS
+lng = usv.get_gps_lng()
+```
+```python
+def get_gps_speed(self):
+# Функця возвращает скорость в км\ч по GPS
+kmph = usv.get_gps_speed()
+```
+```python
+def get_gps_yaw(self):
+# Функця возвращает курс относительно севера по GPS
+yaw = usv.get_gps_yaw()
+```
+
+#### Функции, **не доступные** для MiddleUSV:
+
+```python 
+def get_depth()
+```

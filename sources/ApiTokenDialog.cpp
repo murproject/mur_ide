@@ -7,7 +7,7 @@ namespace Ide::Ui {
 
 ApiTokenDialog::ApiTokenDialog(QWidget *parent) :
     QDialog(parent),
-    m_dilogTextLabel(new QLabel("API token required. Consider create token at: <a href=\"https://robocenter.net/murtracker/ \">robocenter.net/murtracker</a>", this)),
+    m_dilogTextLabel(new QLabel("API token required. Consider create token at: <a href=\"https://robocenter.net/murtracker/app/profile \">robocenter.net/murtracker</a>", this)),
     m_applyButton(new QPushButton("Apply")),
     m_cancelButton(new QPushButton("Cancel")),
     m_tokenEdit(new QLineEdit(this))
