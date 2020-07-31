@@ -192,38 +192,38 @@ usv = mur.usv_init()
 
 ```python
 def set_servo(angle):
-#С помощью данной функции можно установить угол поворота серво-камеры
-#аргумент angle - целое число от 0 до 180
+# С помощью данной функции можно установить угол поворота серво-камеры
+# аргумент angle - целое число от 0 до 180
 usv.set_servo(90)
 ```
 ```python
 def get_gps_satellites(self):
-#Функция возвращает количество видимых спутников GPS 
+# Функция возвращает количество видимых спутников GPS 
 sat = usv.get_gps_satellites()
 ```
 ```python
 def get_gps_alt(self):
-#Функция возвращает высоту по GPS
+# Функция возвращает высоту по GPS
 alt = usv.get_gps_alt()
 ```
 ```python
 def get_gps_lat(self):
-#Функця возвращает широту по GPS
+# Функця возвращает широту по GPS
 lat = usv.get_gps_lat()
 ```
 ```python
 def get_gps_lng(self):
-#Функця возвращает долготу по GPS
+# Функця возвращает долготу по GPS
 lng = usv.get_gps_lng()
 ```
 ```python
 def get_gps_speed(self):
-#Функця возвращает скорость в км\ч по GPS
+# Функця возвращает скорость в км\ч по GPS
 kmph = usv.get_gps_speed()
 ```
 ```python
 def get_gps_yaw(self):
-#Функця возвращает курс относительно севера по GPS
+# Функця возвращает курс относительно севера по GPS
 yaw = usv.get_gps_yaw()
 ```
 
