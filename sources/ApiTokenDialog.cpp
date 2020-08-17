@@ -1,4 +1,4 @@
-#include "APITokenDialog.hxx"
+#include "ApiTokenDialog.hxx"
 #include <QVBoxLayout>
 #include <QPushButton>
 #include <QMessageBox>

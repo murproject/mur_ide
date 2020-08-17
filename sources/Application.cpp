@@ -21,8 +21,8 @@ QString Application::m_resourceDirectory = {};
 
 int Application::execute(int argc, char **argv)
 {
-    QtWebEngine::initialize();
     QApplication app(argc, argv);
+    QtWebEngine::initialize();
 
     if (instance == nullptr) {
         instance = new Application;

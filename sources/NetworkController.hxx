@@ -6,7 +6,7 @@
 #include <QObject>
 #include <QTimer>
 #include <QWebSocket>
-#include "APITokenDialog.hxx"
+#include "ApiTokenDialog.hxx"
 
 namespace Ide::Ui {
 class NetworkController : public QObject
