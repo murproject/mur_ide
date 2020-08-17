@@ -108,3 +108,4 @@ target_link_libraries(${PROJECT_NAME}
         PRIVATE ${OpenCV_LIBS}
         ${CMAKE_THREAD_LIBS_INIT})
 
+install(TARGETS ${PROJECT_NAME} DESTINATION bin)
