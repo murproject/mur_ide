@@ -51,6 +51,16 @@ void LocalScriptsController::run()
     ApplicationLogger::instance->addEntry("Program started.");
 }
 
+void LocalScriptsController::processOutput() {
+//    ApplicationLogger::instance->addEntry(m_scriptProcess->readAllStandardOutput());
+}
+
+void LocalScriptsController::processError(QProcess::ProcessError error) {
+    ApplicationLogger::instance->addEntry(m_scriptProcess->errorString());
+    if (error == QProcess::FailedToStart)
+        ApplicationLogger::instance->addEntry("is python3 installed?");
+}
+
 void LocalScriptsController::stop()
 {
     if (m_scriptProcess->state() == QProcess::NotRunning) {
@@ -110,6 +120,21 @@ void LocalScriptsController::setupProcess()
             qOverload<int>(&QProcess::finished),
             this,
             &LocalScriptsController::runningStateChanged);
+
+    connect(m_scriptProcess,
+            &QProcess::readyReadStandardOutput,
+            this,
+            &LocalScriptsController::processOutput);
+
+    connect(m_scriptProcess,
+            &QProcess::readyReadStandardError,
+            this,
+            &LocalScriptsController::processOutput);
+
+    connect(m_scriptProcess,
+            &QProcess::errorOccurred,
+            this,
+            &LocalScriptsController::processError);
 }
 
 } // namespace ide::ui

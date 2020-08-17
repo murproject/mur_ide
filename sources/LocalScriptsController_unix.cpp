@@ -3,8 +3,6 @@
 #include "ApplicationLogger.hxx"
 #include "EditorController.hxx"
 
-// #include <Windows.h>
-
 namespace Ide::Ui {
 
 LocalScriptsController *LocalScriptsController::instance = nullptr;
@@ -26,7 +24,31 @@ LocalScriptsController *LocalScriptsController::Create()
 
 void LocalScriptsController::run()
 {
+    auto script_path = Ide::Ui::EditorController::instance->getFileUrl();
+
+    if (script_path.size() < 2) {
+        ApplicationLogger::instance->addEntry("Unable to start: script does not exists.");
+        return;
+    }
+
+    QString runCommand = "python3 " + script_path;
+
+    ApplicationLogger::instance->addEntry("Program started.\n");
+    m_scriptProcess->start(runCommand);
+    m_scriptProcess->waitForStarted();
+    m_pid = m_scriptProcess->pid();
+
     return;
+}
+
+void LocalScriptsController::processOutput() {
+    ApplicationLogger::instance->addEntry(m_scriptProcess->readAllStandardOutput());
+}
+
+void LocalScriptsController::processError(QProcess::ProcessError error) {
+    ApplicationLogger::instance->addEntry(m_scriptProcess->errorString());
+    if (error == QProcess::FailedToStart)
+        ApplicationLogger::instance->addEntry("is python3 installed?");
 }
 
 void LocalScriptsController::stop()
@@ -88,6 +110,21 @@ void LocalScriptsController::setupProcess()
             qOverload<int>(&QProcess::finished),
             this,
             &LocalScriptsController::runningStateChanged);
+
+    connect(m_scriptProcess,
+            &QProcess::readyReadStandardOutput,
+            this,
+            &LocalScriptsController::processOutput);
+
+    connect(m_scriptProcess,
+            &QProcess::readyReadStandardError,
+            this,
+            &LocalScriptsController::processOutput);
+
+    connect(m_scriptProcess,
+            &QProcess::errorOccurred,
+            this,
+            &LocalScriptsController::processError);
 }
 
 } // namespace ide::ui
