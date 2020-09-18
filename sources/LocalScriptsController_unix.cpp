@@ -2,6 +2,7 @@
 #include "Application.hxx"
 #include "ApplicationLogger.hxx"
 #include "EditorController.hxx"
+#include "SettingsController.hxx"
 
 namespace Ide::Ui {
 
@@ -31,7 +32,8 @@ void LocalScriptsController::run()
         return;
     }
 
-    QString runCommand = "python3 " + script_path;
+//    QString runCommand = "venv/bin/python3 " + script_path;
+    QString runCommand = Ide::Ui::SettingsController::instance->getPythonPath() + " " + script_path;
 
     ApplicationLogger::instance->addEntry("Program started.\n");
     m_scriptProcess->start(runCommand);
@@ -43,6 +45,7 @@ void LocalScriptsController::run()
 
 void LocalScriptsController::processOutput() {
     ApplicationLogger::instance->addEntry(m_scriptProcess->readAllStandardOutput());
+    ApplicationLogger::instance->addEntry(m_scriptProcess->readAllStandardError());
 }
 
 void LocalScriptsController::processError(QProcess::ProcessError error) {

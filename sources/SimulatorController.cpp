@@ -1,4 +1,5 @@
 #include "SimulatorController.hxx"
+#include "SettingsController.hxx"
 #include "Application.hxx"
 #include <QDebug>
 
@@ -42,7 +43,9 @@ void SimulatorController::run()
         return;
     }
 
-    auto sim_path = Ide::Ui::Application::getResourcesDirectory() + "/simulator/murSimulator.exe";
+//    auto sim_path = Ide::Ui::Application::getResourcesDirectory() + "/simulator/murSimulator.exe";
+    auto sim_path = Ide::Ui::SettingsController::instance->getSimulatorPath();
+
     m_simulator_process->setProgram(sim_path);
     m_simulator_process->start();
 }

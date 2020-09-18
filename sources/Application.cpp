@@ -3,6 +3,7 @@
 #include "QmlImageItem.hxx"
 #include "QmlUtils.hxx"
 #include "RemoteController.hxx"
+#include "SettingsController.hxx"
 
 #include <QApplication>
 #include <QDebug>
@@ -57,7 +58,8 @@ void Application::initialize()
         }
     }
 
-    m_resourceDirectory = path.absolutePath() + "/resources/";
+    Ide::Ui::SettingsController::Create();
+    m_resourceDirectory = Ide::Ui::SettingsController::instance->getResourcePath();
     setupEnvironment();
 
     Ide::qml::InitializeControllers();

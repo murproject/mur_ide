@@ -1,4 +1,5 @@
 #include "UpdateController.hxx"
+#include "SettingsController.hxx"
 
 #include <QApplication>
 #include <QMessageBox>
@@ -22,14 +23,14 @@ UpdateController::UpdateController()
 
 void UpdateController::loadSettings()
 {
-    QSettings settings("settings.ini", QSettings::IniFormat);
-    m_isCheckForUpdate = settings.value("checkForUpdate", true).toBool();
+    QSettings *settings = Ide::Ui::SettingsController::instance->settings;
+    m_isCheckForUpdate = settings->value("checkForUpdate", true).toBool();
 }
 
 void UpdateController::saveSettings()
 {
-    QSettings settings("settings.ini", QSettings::IniFormat);
-    settings.setValue("checkForUpdate", m_isCheckForUpdate);
+    QSettings *settings = Ide::Ui::SettingsController::instance->settings;
+    settings->setValue("checkForUpdate", m_isCheckForUpdate);
 }
 
 UpdateController *UpdateController::Create()

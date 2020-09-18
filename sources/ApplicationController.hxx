@@ -13,6 +13,7 @@ class ApplicationLogger;
 class LocalScriptsController;
 class RemoteController;
 class UpdateController;
+class SettingsController;
 
 class ApplicationController : public QObject
 {
@@ -25,6 +26,7 @@ class ApplicationController : public QObject
     Q_PROPERTY(Ide::Ui::LocalScriptsController *scripts READ getScripts CONSTANT)
     Q_PROPERTY(Ide::Ui::RemoteController *image READ getImage CONSTANT)
     Q_PROPERTY(Ide::Ui::UpdateController *updates READ getUpdates CONSTANT)
+//    Q_PROPERTY(Ide::Ui::SettingsController *settings READ getSettings CONSTANT)
 
 public:
     EditorController *getEditor();
@@ -35,6 +37,7 @@ public:
     LocalScriptsController *getScripts();
     RemoteController *getImage();
     UpdateController *getUpdates();
+    SettingsController *getSettings();
 
     static ApplicationController *instance;
     static ApplicationController *Create();

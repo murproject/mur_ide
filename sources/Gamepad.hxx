@@ -97,6 +97,8 @@ private:
     bool m_isXinverse = false;
     bool m_isYinverse = false;
     bool m_isZinverse = false;
+
+    void connectGamepad();
 };
 
 } // namespace ide::ui
