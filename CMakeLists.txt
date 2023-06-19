@@ -7,8 +7,8 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_REQUIRED_FLAGS -std=c++17)
 
-set(CMAKE_PREFIX_PATH "C:/Qt/5.15.0/msvc2019_64")
-set(OpenCV_DIR "D:/projects/opencv_430/build2")
+#set(CMAKE_PREFIX_PATH "path/to/Qt/5.15.0/msvc2019_64")
+#set(OpenCV_DIR "path/to/opencv_430/build")
 
 find_package(OpenCV REQUIRED)
 find_package(Threads)
