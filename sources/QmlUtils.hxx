@@ -5,8 +5,6 @@
 
 namespace Ide::qml {
 
-//TODO(Vlad): Register composite type.
-
 QList<std::function<void()>> &getControllersInitializersList();
 void InitializeControllers();
 
@@ -23,4 +21,4 @@ struct RegisterType
     }
 };
 
-} // namespace ide::qml
+} 

@@ -5,7 +5,7 @@ Rectangle {
 
     height: 22;
 
-    color: "#21252B"
+    color: Style.bgDark
 
     UiLabel {
         anchors.verticalCenter: parent.verticalCenter;
@@ -21,6 +21,7 @@ Rectangle {
         anchors.bottom: parent.bottom;
         anchors.right: parent.right;
         anchors.rightMargin: 8;
+        visible: parent.width > 80;
 
         UiButton {
             anchors.verticalCenter: parent.verticalCenter;
@@ -49,6 +50,6 @@ Rectangle {
         anchors.top: parent.top;
 
         height: 1;
-        color: "#181A1F"
+        color: Style.bgDarker
     }
 }

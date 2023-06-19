@@ -6,6 +6,41 @@ namespace Ide::Ui {
 Gamepad *Gamepad::instance = nullptr;
 qml::RegisterType<Gamepad> Gamepad::Register;
 
+QList<QString> GamepadAxes::GamepadAxesNames = {
+    "···",
+    "Left X",
+    "Left Y",
+    "Right X",
+    "Right Y",
+    "A",
+    "B",
+    "X",
+    "Y",
+    "L1",
+    "R1",
+    "L2",
+    "R2",
+    "Select",
+    "Start",
+    "L3",
+    "R3",
+    "Up",
+    "Down",
+    "Right",
+    "Left",
+    "Center",
+    "Guide",
+};
+
+QList<QString> GamepadAxes::MovementAxesNames = {
+    "Empty",
+    "Axis X (yaw)",
+    "Axis Y (forward)",
+    "Axis W (side)",
+    "Axis Z (depth)",
+    "Axis count",
+};
+
 Gamepad::Gamepad()
 {
     if (instance != nullptr) {
@@ -14,102 +49,167 @@ Gamepad::Gamepad()
     m_gamepad = new QGamepad{};
     loadSettings();
 
-    m_gamepadAxesNames[gamepadAxes::axisLeftX] = "Left  axis X";
-    m_gamepadAxesNames[gamepadAxes::axisLeftY] = "Left  axis Y";
-    m_gamepadAxesNames[gamepadAxes::axisRightX] = "Right axis X";
-    m_gamepadAxesNames[gamepadAxes::axisRightY] = "Right axis Y";
+    qmlRegisterUncreatableType<GamepadAxes>("mur.GamepadAxes", 1, 0, "GamepadAxes", "");
 
-    connect(m_gamepad, &QGamepad::axisLeftXChanged, this, &Gamepad::onLeftXChanged);
-    connect(m_gamepad, &QGamepad::axisLeftYChanged, this, &Gamepad::onLeftYChanged);
-    connect(m_gamepad, &QGamepad::axisRightXChanged, this, &Gamepad::onRightXChanged);
-    connect(m_gamepad, &QGamepad::axisRightYChanged, this, &Gamepad::onRightYChanged);
+    m_updateTimer = new QTimer{};
+    m_updateTimer->setInterval(25);
+    connect(m_updateTimer, &QTimer::timeout, this, &Gamepad::onUpdateTimeout);
+    m_updateTimer->start();
+
+    this->connectGamepad();
+    connect(QGamepadManager::instance(), &QGamepadManager::gamepadAxisEvent, this, &Gamepad::axisEvent);
+    connect(QGamepadManager::instance(), &QGamepadManager::gamepadButtonPressEvent, this, &Gamepad::buttonEvent);
+    connect(QGamepadManager::instance(), &QGamepadManager::gamepadButtonReleaseEvent, this, &Gamepad::buttonReleaseEvent);
+    connect(QGamepadManager::instance(), &QGamepadManager::connectedGamepadsChanged, this, &Gamepad::connectGamepad);
 }
 
-void Gamepad::update()
-{
-    m_gamepadValues[gamepadAxes::axisLeftX] = m_gamepad->axisLeftX();
-    m_gamepadValues[gamepadAxes::axisLeftY] = m_gamepad->axisLeftY();
-    m_gamepadValues[gamepadAxes::axisRightX] = m_gamepad->axisRightX();
-    m_gamepadValues[gamepadAxes::axisRightY] = m_gamepad->axisRightY();
+void Gamepad::onUpdateTimeout() {
+    if (m_axisChanged) {
+        m_axisChanged = false;
+        emit axesValueChanged();
+    }
 }
 
-void Gamepad::onLeftXChanged()
-{
+void Gamepad::axisEvent(int deviceId, QGamepadManager::GamepadAxis axis, double value) {
+    m_gamepadAllValues[axis + 1] = value;
+
+    if (m_isRebinding && qAbs(value) > 0.6) {
+        rebindAxis(axis + 1);
+    }
+
+    m_axisChanged = true;
+}
+
+void Gamepad::buttonReleaseEvent(int deviceId, QGamepadManager::GamepadButton button) {
+    buttonEvent(deviceId, button, 0.0);
+}
+
+void Gamepad::buttonEvent(int deviceId, QGamepadManager::GamepadButton button, double value) {
+    value = value * 2 -1;
+    m_gamepadAllValues[button + 5] = value;
+
+    if (m_isRebinding && qAbs(value) > 0.6) {
+        rebindAxis(button + 5);
+    }
+
     emit axesValueChanged();
-    if (!isRebindRequested()) {
-        return;
-    }
-    if (std::abs(m_gamepad->axisLeftX()) < 0.6) {
-        return;
-    }
-    rebind(gamepadAxes::axisLeftX);
-    emit axisNameChanged();
 }
 
-void Gamepad::onLeftYChanged()
+int Gamepad::getAxisValue(GamepadAxes::MovementAxes axis) {
+    return calcAxisValue(m_gamepadAllValues[m_gamepadAxesBindings[axis]] * (m_gamepadAxesInversions[axis] ? -100 : 100));
+}
+
+int Gamepad::getAxisValueRaw(int axis) {
+    auto movAxis = static_cast<GamepadAxes::MovementAxes>(axis);
+    return m_gamepadAllValues[m_gamepadAxesBindings[movAxis]] * (m_gamepadAxesInversions[movAxis] ? -100 : 100);
+}
+
+bool Gamepad::getButtonValue(GamepadAxes::MovementAxes axis) {
+    return calcAxisValue(m_gamepadAllValues[m_gamepadAxesBindings[axis]] * (m_gamepadAxesInversions[axis] ? -100 : 100)) > 50;
+}
+
+
+bool Gamepad::getAxisInversion(GamepadAxes::MovementAxes axis) {
+    return m_gamepadAxesInversions[axis];
+}
+
+void Gamepad::setAxisInversion(int axis, bool inversed) {
+    m_gamepadAxesInversions[static_cast<GamepadAxes::MovementAxes>(axis)] = inversed;
+    emit rebinded();
+}
+
+void Gamepad::rebindAxis(int axis) {
+    m_gamepadAxesBindings[m_currentlyRebindingAxis] = axis;
+    m_currentlyRebindingAxis = GamepadAxes::AxisZero;
+    m_isRebinding = false;
+    emit rebindingChanged();
+    emit rebinded();
+}
+
+void Gamepad::clearAxis(int axis) {
+    m_currentlyRebindingAxis = static_cast<GamepadAxes::MovementAxes>(axis);
+    setAxisInversion(axis, false);
+    rebindAxis(0);
+}
+
+void Gamepad::swapAxes(int axis1, int axis2) {
+    auto gamepadAxis1 = m_gamepadAxesBindings[static_cast<GamepadAxes::MovementAxes>(axis1)];
+    auto gamepadAxis2 = m_gamepadAxesBindings[static_cast<GamepadAxes::MovementAxes>(axis2)];
+
+    m_gamepadAxesBindings[static_cast<GamepadAxes::MovementAxes>(axis2)] = gamepadAxis1;
+    m_gamepadAxesBindings[static_cast<GamepadAxes::MovementAxes>(axis1)] = gamepadAxis2;
+
+    m_isRebinding = false;
+    emit rebindingChanged();
+    emit rebinded();
+}
+
+void Gamepad::requestRebind(int axis) {
+    m_isRebinding = true;
+    m_currentlyRebindingAxis = static_cast<GamepadAxes::MovementAxes>(axis);
+    emit rebindingChanged();
+}
+
+QList<qreal> Gamepad::getAllAxes() {
+    QList<qreal> axes;
+
+    for (int i = 0; i < GamepadAxes::AxisCount; i++) {
+        axes.append(getAxisValue(static_cast<GamepadAxes::MovementAxes>(i)));
+    }
+
+    return axes;
+}
+
+QList<bool> Gamepad::getAllAxesInversions() {
+    QList<bool> axes;
+
+    for (int i = 0; i < GamepadAxes::AxisCount; i++) {
+        axes.append(getAxisInversion(static_cast<GamepadAxes::MovementAxes>(i)));
+    }
+
+    return axes;
+}
+
+QList<QString> Gamepad::getAllAxesBindings() {
+    QList<QString> axes;
+
+    for (int i = 0; i < GamepadAxes::AxisCount; i++) {
+        axes.append(getGamepadAxisName(i));
+    }
+
+    return axes;
+}
+
+QString Gamepad::getGamepadAxisName(int axis)
 {
+    return GamepadAxes::GamepadAxesNames[m_gamepadAxesBindings[static_cast<GamepadAxes::MovementAxes>(axis)]];
+}
+
+QString Gamepad::getMovementAxisName(int axis)
+{
+    return GamepadAxes::MovementAxesNames[static_cast<GamepadAxes::MovementAxes>(axis)];
+}
+
+bool Gamepad::isRebinding() {
+    return m_isRebinding;
+}
+
+int Gamepad::getRebindingAxis() {
+    return m_currentlyRebindingAxis;
+}
+
+void Gamepad::setForceAxisValue(int axis, int value) {
+    m_gamepadAllValues[axis] = value / 100.0f;
     emit axesValueChanged();
-    if (!isRebindRequested()) {
-        return;
-    }
-    if (std::abs(m_gamepad->axisLeftY()) < 0.6) {
-        return;
-    }
-    rebind(gamepadAxes::axisLeftY);
-    emit axisNameChanged();
 }
 
-void Gamepad::onRightXChanged()
-{
+void Gamepad::addForceAxisValue(int axis, int value) {
+    m_gamepadAllValues[axis] = m_gamepadAllValues[axis] + (value / 100.0f);
     emit axesValueChanged();
-    if (!isRebindRequested()) {
-        return;
-    }
-    if (std::abs(m_gamepad->axisRightX()) < 0.6) {
-        return;
-    }
-    rebind(gamepadAxes::axisRightX);
-    emit axisNameChanged();
 }
 
-void Gamepad::onRightYChanged()
-{
-    emit axesValueChanged();
-    if (!isRebindRequested()) {
-        return;
-    }
-    if (std::abs(m_gamepad->axisRightY()) < 0.6) {
-        return;
-    }
-    rebind(gamepadAxes::axisRightY);
-    emit axisNameChanged();
-}
-
-void Gamepad::rebind(Gamepad::gamepadAxes axes)
-{
-    if (!isRebindRequested()) {
-        return;
-    }
-    if (m_rebintXrequested) {
-        m_gamepadBinding[powerAxes::axisX] = axes;
-        m_rebintXrequested = false;
-    }
-
-    if (m_rebintYrequested) {
-        m_gamepadBinding[powerAxes::axisY] = axes;
-        m_rebintYrequested = false;
-    }
-
-    if (m_rebintZrequested) {
-        m_gamepadBinding[powerAxes::axisZ] = axes;
-        m_rebintZrequested = false;
-    }
-    saveSettings();
-}
-
-bool Gamepad::isRebindRequested()
-{
-    return m_rebintXrequested || m_rebintYrequested || m_rebintZrequested;
+bool Gamepad::isGamepadConnected() {
+    return m_gamepad->isConnected();
 }
 
 Gamepad *Gamepad::Create()
@@ -123,145 +223,105 @@ QGamepad *Gamepad::getGamepad()
     return m_gamepad;
 }
 
-int Gamepad::getAxisXvalue()
-{
-    update();
-    auto val = static_cast<int>((m_gamepadValues[m_gamepadBinding[powerAxes::axisX]]
-                                 * (isInverseX() ? -100.0 : 100.0)));
-    return val;
-}
+int Gamepad::calcAxisValue(int val) {
+    if (abs(val) < m_deadzone) {
+        return 0;
+    }
 
-int Gamepad::getAxisYvalue()
-{
-    update();
-    auto val = static_cast<int>((m_gamepadValues[m_gamepadBinding[powerAxes::axisY]]
-                                 * (isInverseY() ? -100.0 : 100.0)));
-    return val;
-}
+    bool invert = val < 0;
 
-int Gamepad::getAxisZvalue()
-{
-    update();
-    auto val = static_cast<int>((m_gamepadValues[m_gamepadBinding[powerAxes::axisZ]]
-                                 * (isInverseZ() ? -100.0 : 100.0)));
+    val = (abs(static_cast<double>(val)) - m_deadzone) / (100.0f - m_deadzone) * 100.0f;
+    val = qPow(static_cast<double>(val), m_expFactor) / qPow(100.0f, m_expFactor - 1.0f);
+
+    val *= (invert ? -1 : 1);
+    val = qMax(qMin(val, 100), -100);
 
     return val;
 }
 
-QString Gamepad::getAxisXname()
-{
-    return m_gamepadAxesNames[m_gamepadBinding[powerAxes::axisX]];
+int Gamepad::getDeadzone() {
+    return m_deadzone;
 }
 
-QString Gamepad::getAxisYname()
+void Gamepad::setDeadzone(int val)
 {
-    return m_gamepadAxesNames[m_gamepadBinding[powerAxes::axisY]];
+    m_deadzone = val;
+    emit deadzoneChanged();
 }
 
-QString Gamepad::getAxisZname()
-{
-    return m_gamepadAxesNames[m_gamepadBinding[powerAxes::axisZ]];
+double Gamepad::getExpFactor() {
+    return m_expFactor;
 }
 
-void Gamepad::rebindAxisX()
-{
-    m_rebintXrequested = true;
-    emit axisNameChanged();
-}
-
-void Gamepad::rebindAxisY()
-{
-    m_rebintYrequested = true;
-    emit axisNameChanged();
-}
-
-void Gamepad::rebindAxisZ()
-{
-    m_rebintZrequested = true;
-    emit axisNameChanged();
-}
-
-bool Gamepad::isRebindX()
-{
-    return m_rebintXrequested;
-}
-
-bool Gamepad::isRebindY()
-{
-    return m_rebintYrequested;
-}
-
-bool Gamepad::isRebindZ()
-{
-    return m_rebintZrequested;
-}
-
-bool Gamepad::isInverseX()
-{
-    return m_isXinverse;
-}
-
-bool Gamepad::isInverseY()
-{
-    return m_isYinverse;
-}
-
-bool Gamepad::isInverseZ()
-{
-    return m_isZinverse;
-}
-
-void Gamepad::setInverseX(bool val)
-{
-    m_isXinverse = val;
-    emit inverseionChanged();
-    saveSettings();
-}
-
-void Gamepad::setInverseY(bool val)
-{
-    m_isYinverse = val;
-    emit inverseionChanged();
-    saveSettings();
-}
-
-void Gamepad::setInverseZ(bool val)
-{
-    m_isZinverse = val;
-    emit inverseionChanged();
-    saveSettings();
+void Gamepad::setExpFactor(double value) {
+    m_expFactor = value;
+    emit expFactorChanged();
 }
 
 void Gamepad::saveSettings()
 {
     QSettings settings("settings.ini", QSettings::IniFormat);
-    settings.setValue("axisX", static_cast<int>(m_gamepadBinding[powerAxes::axisX]));
-    settings.setValue("axisY", static_cast<int>(m_gamepadBinding[powerAxes::axisY]));
-    settings.setValue("axisZ", static_cast<int>(m_gamepadBinding[powerAxes::axisZ]));
 
-    settings.setValue("axisXInv", m_isXinverse);
-    settings.setValue("axisYInv", m_isYinverse);
-    settings.setValue("axisZInv", m_isZinverse);
+    settings.beginWriteArray("Gamepad/axes");
+    for (int i = 0; i < GamepadAxes::AxisCount; i++) {
+        settings.setArrayIndex(i);
+        settings.setValue("binding", m_gamepadAxesBindings[static_cast<GamepadAxes::MovementAxes>(i)]);
+        settings.setValue("inversion", m_gamepadAxesInversions[static_cast<GamepadAxes::MovementAxes>(i)]);
+    }
+    settings.endArray();
+
+    settings.setValue("Gamepad/deadzone", m_deadzone);
+    settings.setValue("Gamepad/exp_factor", m_expFactor);
+    settings.endArray();
 }
 
 void Gamepad::loadSettings()
 {
     QSettings settings("settings.ini", QSettings::IniFormat);
-    m_gamepadBinding[powerAxes::axisX] = static_cast<gamepadAxes>(
-        settings.value("axisX", 0).toInt());
 
-    m_gamepadBinding[powerAxes::axisY] = static_cast<gamepadAxes>(
-        settings.value("axisY", 1).toInt());
+    int size = settings.beginReadArray("Gamepad/axes");
+    for (int i = 0; i < size; i++) {
+        settings.setArrayIndex(i);
+        m_gamepadAxesBindings[static_cast<GamepadAxes::MovementAxes>(i)] = settings.value("binding", 0).toInt();
+        m_gamepadAxesInversions[static_cast<GamepadAxes::MovementAxes>(i)] = settings.value("inversion", false).toBool();
+        m_gamepadAxesBindings[GamepadAxes::AxisW] = 0;
+    }
+    settings.endArray();
 
-    m_gamepadBinding[powerAxes::axisZ] = static_cast<gamepadAxes>(
-        settings.value("axisZ", 2).toInt());
+    if (m_gamepadAxesBindings[GamepadAxes::AxisX] == 0) {
+        m_gamepadAxesBindings[GamepadAxes::AxisX] = 1;
+    }
 
-    m_isXinverse = settings.value("axisXInv", false).toBool();
-    m_isYinverse = settings.value("axisYInv", false).toBool();
-    m_isZinverse = settings.value("axisZInv", false).toBool();
+    if (m_gamepadAxesBindings[GamepadAxes::AxisY] == 0) {
+        m_gamepadAxesBindings[GamepadAxes::AxisY] = 2;
+    }
 
-    emit inverseionChanged();
-    emit axisNameChanged();
+    if (m_gamepadAxesBindings[GamepadAxes::AxisZ] == 0) {
+        m_gamepadAxesBindings[GamepadAxes::AxisZ] = 4;
+    }
+
+    m_deadzone = settings.value("Gamepad/deadzone", 0).toInt();
+    m_expFactor = settings.value("Gamepad/exp_factor", 1.0).toDouble();
+
+    settings.endArray();
+
+    emit deadzoneChanged();
+    emit expFactorChanged();
+    emit rebinded();
 }
 
-} // namespace ide::ui
+void Gamepad::connectGamepad()
+{
+    auto gamepads = QGamepadManager::instance()->connectedGamepads();
+
+    if (!gamepads.isEmpty()) {
+        m_gamepad->setDeviceId(*gamepads.begin());
+    }
+
+    if (!qApp->closingDown()) {
+        emit onGamepadConnectedChanged(!gamepads.isEmpty());
+    }
+}
+
+
+} 

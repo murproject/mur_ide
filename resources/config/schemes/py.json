@@ -1,0 +1,61 @@
+{
+	"scheme": {
+		"comment": "Python",
+		"suffixes": ["py"],
+		"highlight": [{
+			"comment": "numbers",
+			"match": "\\b\\d+(\\.\\d*)?\\b",
+			"color": "#AF601A",
+			"bold": true
+		}, {
+			"comment": "functions",
+			"match": "\\b[\\w_]+\\s*(?=\\()",
+			"color": "#1ABC9C",
+			"bold": true
+		}, {
+			"comment": "keywords",
+			"match": "(?:\\b|\\s+)(?:(with|yield|del|import|as|global|pass|raise|in|from|try|except|pass))\\b",
+			"color": "#C678DD",
+			"bold": true
+		}, {
+			"comment": "units",
+			"match": "(?:\\b|\\s+)(?:(def|class|lambda))\\b",
+			"color": "#F1948A",
+			"bold": true
+		}, {
+			"comment": "logic",
+			"match": "(?:\\b|\\s+)(?:(is|not|if|elif|and|or|else|nonlocal))\\b",
+			"color": "#FFCD02",
+			"bold": true
+		}, {
+			"comment": "boolean",
+			"match": "(?:\\b|\\s+)(?:(True|False|None|assert))\\b",
+			"color": "#FC6E51",
+			"bold": true
+		}, {
+			"comment": "controll",
+			"match": "(?:\\b|\\s+)(?:(finally|return|break|continue|for|while))\\b",
+			"color": "#5D9CCE",
+			"bold": true
+		}, {
+			"comment": "strings",
+			"match": "\".*\"",
+			"color": "#9DA5B4"
+		}, {
+			"comment": "single quoted string",
+			"match": "\'.*\'",
+			"color": "#9DA5B4"
+		}, {
+			"comment": "inline comments",
+			"match": "#.*$",
+			"color": "#888",
+			"italic": true
+		},
+		{
+			"comment": "multiline comments",
+			"match": "\"\"\".*\"\"\"",
+			"color": "#888",
+			"italic": true
+		}]
+	}
+}

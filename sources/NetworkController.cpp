@@ -14,21 +14,27 @@ NetworkController::NetworkController()
     if (instance != nullptr) {
         throw std::runtime_error("Instance of network_controller already exists");
     }
+
+    QSettings settings("settings.ini", QSettings::IniFormat);
+    m_connectionAddress = settings.value("Network/connection_address", "10.3.141.1:2090").toString();
+    m_reconnectTime = settings.value("Network/reconnect_time", 1000).toInt();
+    m_pingTime = settings.value("Network/ping_time", 1000).toInt();
+    m_pongTime = settings.value("Network/pong_time", 3000).toInt();
+
     m_webSocket = new QWebSocket{};
+    m_reconnectionTimer = new QTimer{};
     m_pingTimer = new QTimer{};
     m_pongTimer = new QTimer{};
     m_ApiTokenDialog = new ApiTokenDialog{};
 
-    m_reconnectionTimer = new QTimer{};
-    m_reconnectionTimer->start(3000);
-
-    m_pingTimer->setInterval(5000);
-    m_pongTimer->setInterval(10000);
+    m_reconnectionTimer->start(m_reconnectTime);
+    m_pingTimer->setInterval(m_pingTime);
+    m_pongTimer->setInterval(m_pongTime);
 
     connect(m_reconnectionTimer, &QTimer::timeout, this, &NetworkController::onReconnectTimer);
     connect(m_webSocket, &QWebSocket::connected, this, &NetworkController::onConnected);
     connect(m_webSocket, &QWebSocket::disconnected, this, &NetworkController::onDisconnected);
-    connect(m_webSocket, &QWebSocket::textMessageReceived, this, &NetworkController::onTelimetryReceived);
+    connect(m_webSocket, &QWebSocket::textMessageReceived, this, &NetworkController::onTelemetryReceived);
     connect(m_webSocket, &QWebSocket::pong, this, &NetworkController::onPongReceived);
     connect(m_pongTimer, &QTimer::timeout, this, &NetworkController::onPongTimeout);
     connect(m_pingTimer, &QTimer::timeout, this, &NetworkController::onPingTimeout);
@@ -39,6 +45,7 @@ void NetworkController::onConnected()
 {
     m_reconnectionTimer->stop();
     m_pingTimer->start();
+    requestFeatures();
     emit connectionStatusChanged();
 }
 
@@ -54,44 +61,143 @@ void NetworkController::onDisconnected()
 void NetworkController::onReconnectTimer()
 {
     m_webSocket->abort();
-    m_webSocket->open((QUrl("ws://10.3.141.1:2090")));
+    m_webSocket->open((QUrl("ws://" + m_connectionAddress)));
 }
 
-void NetworkController::onTelimetryReceived(const QString &message)
+void NetworkController::requestFeatures() {
+    m_softwareFeatures.clear();
+    m_webSocket->sendTextMessage(Ide::IO::ToJson::software_features());
+}
+
+void NetworkController::syncVehicleTime() {
+    m_webSocket->sendTextMessage(Ide::IO::ToJson::set_time(QDateTime::currentSecsSinceEpoch()));
+}
+
+QString NetworkController::getConnectionAddress() {
+    return m_connectionAddress;
+}
+
+void NetworkController::setConnectionAddress(QString address) {
+    m_connectionAddress = address;
+}
+
+void NetworkController::saveSettings() {
+    QSettings settings("settings.ini", QSettings::IniFormat);
+
+    settings.setValue("Network/connection_address", m_connectionAddress);
+    settings.setValue("Network/ping_time", m_pingTime);
+    settings.setValue("Network/pong_time", m_pongTime);
+    settings.setValue("Network/reconnect_time", m_reconnectTime);
+}
+
+int NetworkController::getPingTime() {
+    return m_pingTime;
+}
+
+int NetworkController::getPongTime() {
+    return m_pongTime;
+}
+
+int NetworkController::getReconnectTime() {
+    return m_reconnectTime;
+}
+
+void NetworkController::setPingTime(int value) {
+    m_pingTime = value;
+    emit timingChanged();
+}
+
+void NetworkController::setPongTime(int value) {
+    m_pongTime = value;
+    emit timingChanged();
+}
+
+void NetworkController::setReconnectTime(int value) {
+    m_reconnectTime = value;
+    emit timingChanged();
+}
+
+void NetworkController::onTelemetryReceived(const QString &message)
 {
     auto doc = QJsonDocument::fromJson(message.toUtf8());
     auto object = doc.object();
 
-    if ((object.contains("type") && object["type"].toString() == "output")) {
-        auto [error_b64, output_b64] = Ide::IO::FromJson::output(message);
+    if (object.contains("type")) {
+        QString type = object["type"].toString();
 
-        auto error = QString(QByteArray::fromBase64(error_b64.toUtf8())).trimmed();
-        auto output = QString(QByteArray::fromBase64(output_b64.toUtf8())).trimmed();
+        if (type == "output") {
+            auto [output_b64, error_b64] = Ide::IO::FromJson::output(message);
 
-        ApplicationLogger::instance->addEntry(output);
-        ApplicationLogger::instance->addEntry(error);
-    }
+            auto error = QString(QByteArray::fromBase64(error_b64.toUtf8())).trimmed();
+            auto output = QString(QByteArray::fromBase64(output_b64.toUtf8())).trimmed();
 
-    if ((object.contains("type") && object["type"].toString() == "telemetry")) {
-        m_telimetry = Ide::IO::FromJson::telemetry(message);
-        emit telimetryUpdated();
-    }
+            if (object.contains("shell") && object["shell"].toBool() == true) {
+                if (output.contains("mur-midauv-meta Version:")) {
+                    QRegExp version_regexp("mur-midauv-meta Version: (\\d+)\\.(\\d+)-(\\d+)");
+                    QVector<int> version;
 
-    if ((object.contains("type") && object["type"].toString() == "request_api_token")) {
-        ApplicationLogger::instance->addEntry("API token required");
-        m_ApiTokenDialog->open();
+                    int pos = version_regexp.indexIn(output);
+                    if (pos > -1) {
+                        version << version_regexp.cap(1).toInt()
+                                << version_regexp.cap(2).toInt()
+                                << version_regexp.cap(3).toInt();
+                    }
+                    emit firmwareVersionReceived(version[0], version[1], version[2]);
+                }
+
+                emit shellOutputReceived(output, error);
+            } else {
+                output.replace("\n", "<br>");
+                error.replace("\n", "<br>");
+                ApplicationLogger::instance->addOutput(output, error);
+            }
+        }
+
+        if (type == "telemetry") {
+            m_telemetry = Ide::IO::FromJson::telemetry(message);
+            qDebug() << "volts: " << doc["voltage"].toDouble()
+                     << "\tamps: " << doc["amperage"].toDouble();
+            emit telemetryUpdated();
+        }
+
+        if (type == "request_api_token") {
+            ApplicationLogger::instance->addEntry("API token required");
+            m_ApiTokenDialog->open();
+        }
+
+        if (type == "notification") {
+            Ide::IO::Notification notification = Ide::IO::FromJson::notification(message);
+            emit notificationReceived(notification.status, notification.message);
+        }
+
+        if (type == "diagnostic_log_response") {
+            QString log = Ide::IO::FromJson::diagnostic_log(message);
+            emit diagnosticLogReceived(log);
+        }
+
+        if (type == "software_features") {
+            QStringList features = Ide::IO::FromJson::software_features(message);
+            m_softwareFeatures.clear();
+            m_softwareFeatures << features;
+            qDebug() << m_softwareFeatures; // TODO
+
+            if (isFeatureSupported("set_time")) {
+                syncVehicleTime();
+            }
+        }
     }
 }
 
 void NetworkController::onPongReceived(quint64, const QByteArray &)
 {
-    m_pongTimer->start();
+    m_pingTimer->start();
 }
 
 void NetworkController::onPingTimeout()
 {
-    m_webSocket->ping();
     m_pongTimer->start();
+    m_pingTimer->stop();
+    m_webSocket->ping();
 }
 
 void NetworkController::onPongTimeout()
@@ -109,7 +215,11 @@ void NetworkController::onTokenAccepted()
 
 double NetworkController::getBatteryStatus()
 {
-    return m_telimetry.battery;
+    return m_telemetry.battery;
+}
+
+bool NetworkController::isCharging() {
+    return m_telemetry.is_charging;
 }
 
 bool NetworkController::getConnectionStatus()
@@ -117,69 +227,117 @@ bool NetworkController::getConnectionStatus()
     return m_webSocket->isValid();
 }
 
-bool NetworkController::isRomoteScriptRunning()
+bool NetworkController::isRemoteScriptRunning()
 {
-    return m_telimetry.is_running;
+    return m_telemetry.is_running;
 }
 
 bool NetworkController::isRemoteModeEnabled()
 {
-    return m_telimetry.is_remote;
+    return m_telemetry.is_remote;
 }
 
 double NetworkController::getYaw()
 {
-    return m_telimetry.yaw;
+    return m_telemetry.yaw;
 }
 
 double NetworkController::getPitch()
 {
-    return m_telimetry.pitch;
+    return m_telemetry.roll;
 }
 
 double NetworkController::getRoll()
 {
-    return m_telimetry.roll;
+    return m_telemetry.pitch;
 }
 
 double NetworkController::getDepth()
 {
-    return m_telimetry.depth;
+    return m_telemetry.depth;
 }
 
 double NetworkController::getPressure()
 {
-    return m_telimetry.pressure;
+    return m_telemetry.pressure;
+}
+
+double NetworkController::getTemperature()
+{
+    return m_telemetry.temperature;
 }
 
 bool NetworkController::isUsv()
 {
-    return m_telimetry.is_usv;
+    return m_telemetry.vehicle_type == "usv";
+}
+
+bool NetworkController::isRov()
+{
+    return m_telemetry.vehicle_type == "rov";
 }
 
 double NetworkController::getLatitude()
 {
-    return m_telimetry.latitude;
+    return m_telemetry.latitude;
 }
 
 double NetworkController::getLongitude()
 {
-    return m_telimetry.longitude;
+    return m_telemetry.longitude;
 }
 
 double NetworkController::getSatellites()
 {
-    return m_telimetry.satellites;
+    return m_telemetry.satellites;
 }
 
 double NetworkController::getAltitude()
 {
-    return m_telimetry.altitude;
+    return m_telemetry.altitude;
 }
 
 double NetworkController::getSpeed()
 {
-    return m_telimetry.speed;
+    return m_telemetry.speed;
+}
+
+QString NetworkController::getVehicleType()
+{
+    return m_telemetry.vehicle_type;
+}
+
+QString NetworkController::getVehicleFancyName(bool html)
+{
+    if (m_telemetry.vehicle_type == "usv") {
+        return html ? "<b>MiddleUSV</b>" : "MiddleUSV";} 
+    else if (m_telemetry.vehicle_type == "rov") {
+        return html ? "<b>ProROV</b>" : "ProROV";}
+    else {
+        if (m_telemetry.vehicle_name.contains("MiddleAUV-CM4")) {
+            return html ? "<b>MiddleAUV</b>-CM4" : "MiddleAUV-CM4";
+        }
+        return html ? "<b>MiddleAUV</b>-CM3" : "MiddleAUV-CM3"; 
+    }
+}
+
+QStringList NetworkController::getSoftwareFeatures() {
+    return m_softwareFeatures;
+}
+
+bool NetworkController::isFeatureSupported(const QString &feature) {
+    return m_softwareFeatures.contains(feature);
+}
+
+QList<qreal> NetworkController::getFcuTelemetry() {
+    QList<qreal> fcu_telemetry = {
+        m_telemetry.fcu0_voltage,
+        m_telemetry.fcu0_amperage,
+        m_telemetry.fcu1_voltage,
+        m_telemetry.fcu1_amperage
+    };
+
+    return fcu_telemetry;
 }
 
 void NetworkController::setRemoteThrust(const QString &message)
@@ -217,7 +375,12 @@ void NetworkController::remote()
         return;
     }
 
-    m_webSocket->sendTextMessage(Ide::IO::ToJson::remote());
+    if (isFeatureSupported("gst_custom")) {
+        m_webSocket->sendTextMessage(Ide::IO::ToJson::remote(Ide::Ui::RemoteController::instance->getPipelines()[0])); 
+    } else {
+        m_webSocket->sendTextMessage(Ide::IO::ToJson::remote());
+    }
+
 }
 
 void NetworkController::stopRemote()
@@ -229,10 +392,45 @@ void NetworkController::stopRemote()
     m_webSocket->sendTextMessage(Ide::IO::ToJson::stop_remote());
 }
 
+void NetworkController::diagnosticLog()
+{
+    if (!m_webSocket->isValid()) {
+        return;
+    }
+
+    m_webSocket->sendTextMessage(Ide::IO::ToJson::diagnostic_log());
+}
+
+void NetworkController::runShellCommand(QString cmd, QStringList args)
+{
+    if (!m_webSocket->isValid()) {
+        return;
+    }
+
+    m_webSocket->sendTextMessage(Ide::IO::ToJson::shell_command_run(cmd, args));
+}
+
+void NetworkController::requestSoftwareVersion()
+{
+    runShellCommand("/bin/bash",
+        {"-c", "echo $(ver=$(dpkg -s mur-midauv-meta | grep Version); echo mur-midauv-meta ${ver:?}); sleep 1"});
+}
+
+void NetworkController::murUpgrade()
+{
+    if (!m_webSocket->isValid()) {
+        return;
+    }
+
+    qDebug() << Ide::IO::ToJson::mur_upgrade();
+
+    m_webSocket->sendTextMessage(Ide::IO::ToJson::mur_upgrade());
+}
+
 NetworkController *NetworkController::Create()
 {
     instance = new NetworkController();
     return instance;
 }
 
-} // namespace ide::ui
+}

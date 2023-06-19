@@ -7,8 +7,8 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_REQUIRED_FLAGS -std=c++17)
 
-set(OpenCV_DIR C:/Libraries/LibOpenCV)
-
+set(CMAKE_PREFIX_PATH "C:/Qt/5.15.0/msvc2019_64")
+set(OpenCV_DIR "D:/projects/opencv_430/build2")
 
 find_package(OpenCV REQUIRED)
 find_package(Threads)
@@ -22,12 +22,12 @@ find_package(Qt5 REQUIRED COMPONENTS
         PrintSupport
         Qml
         Quick
+        QuickControls2
         Gui
         Gamepad
         Concurrent)
 
 add_executable(${PROJECT_NAME} WIN32 resources/icon.rc)
-#add_executable(${PROJECT_NAME} resources/icon.rc)
 
 target_sources(${PROJECT_NAME}
         PRIVATE sources/main.cpp
@@ -102,6 +102,7 @@ target_link_libraries(${PROJECT_NAME}
         PRIVATE Qt5::WebEngine
         PRIVATE Qt5::Qml
         PRIVATE Qt5::Quick
+        PRIVATE Qt5::QuickControls2
         PRIVATE Qt5::Gui
         PRIVATE Qt5::Gamepad
         PRIVATE Qt5::Concurrent

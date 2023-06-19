@@ -112,4 +112,4 @@ private:
     void observedFileChanged(const QString &);
     void observeFile(const QString &);
 };
-} // namespace ide::ui
+} 

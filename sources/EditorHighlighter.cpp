@@ -43,7 +43,7 @@ void EditorHighlighter::init() {
 }
 
 void EditorHighlighter::highlightBlock(const QString &text) {
-  for (const auto &rule : this->m_rules) {
+  for (const auto &rule : qAsConst(this->m_rules)) {
     auto expression = QRegExp(rule.pattern);
     auto index = expression.indexIn(text);
 

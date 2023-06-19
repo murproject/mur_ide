@@ -13,7 +13,7 @@
         <file>qml/Ui/TabView.qml</file>
         <file>qml/Ui/TagLabel.qml</file>
         <file>qml/Ui/ApplicationTextEdit.qml</file>
-        <file>qml/Ui/TextInput.qml</file>
+        <file>qml/Ui/UiTextInput.qml</file>
         <file>qml/Ui/CodeEditor.qml</file>
         <file>qml/Ui/CodeEditorError.qml</file>
         <file>qml/Ui/CodeEditorFooter.qml</file>
@@ -23,15 +23,35 @@
         <file>qml/Ui/ApplicationMenu.qml</file>
         <file>qml/Ui/ApplicationStatusBar.qml</file>
         <file>qml/Ui/ApplicationLogger.qml</file>
-        <file>qml/Ui/TelimetryPopup.qml</file>
+        <file>qml/Ui/TelemetryPopup.qml</file>
         <file>images/mur_logo256.png</file>
         <file>qml/Ui/AboutPopup.qml</file>
         <file>qml/Ui/RemoteView.qml</file>
-        <file>qml/Ui/GamepadSettings.qml</file>
+        <file>qml/Ui/SettingsGamepad.qml</file>
         <file>qml/Ui/AutoCompliter.qml</file>
         <file>images/video_placeholder.png</file>
         <file>help/help.html</file>
-        <file>images/mur_ide_elements.png</file>
         <file>qml/Ui/UpdatePopup.qml</file>
+        <file>qml/Ui/Style.qml</file>
+        <file>qml/Ui/qmldir</file>
+        <file>qml/Ui/NotificationPopup.qml</file>
+        <file>qml/Ui/Notifications.qml</file>
+        <file>qml/Ui/RemoteCamera.qml</file>
+        <file>qml/Ui/RovPanel.qml</file>
+        <file>qml/Ui/RovServoControl.qml</file>
+        <file>qml/Ui/SettingsPanel.qml</file>
+        <file>qml/Ui/UiTextEdit.qml</file>
+        <file>qml/Ui/Compass.qml</file>
+        <file>qml/Ui/TelemetryCharts.qml</file>
+        <file>qml/Ui/TelemetryGroup.qml</file>
+        <file>fonts/NotoSans-Bold.ttf</file>
+        <file>fonts/NotoSans-Regular.ttf</file>
+        <file>fonts/NotoMono-Regular.ttf</file>
+        <file>qml/Ui/GamepadWidget.qml</file>
+        <file>qml/Ui/SettingsRemote.qml</file>
+        <file>qml/Ui/SettingsNetwork.qml</file>
+        <file>qml/Ui/RemoteKeyboardControl.qml</file>
+        <file>qml/Ui/Altimeter.qml</file>
+        <file>images/mur_ide_elements_new.png</file>
     </qresource>
 </RCC>

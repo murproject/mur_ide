@@ -64,4 +64,4 @@ SimulatorController::~SimulatorController()
     }
 }
 
-} // namespace ide::ui
+} 

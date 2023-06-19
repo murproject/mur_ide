@@ -116,9 +116,13 @@ void UpdateController::onCheckConnection()
 
     if (process.exitCode() == 0) {
         m_isConnected = true;
-        onCheckForUpdates();
+//          update disable
+//        onCheckForUpdates();
+        process.close();
         return;
     }
+
+    process.close();
 }
 
-} // namespace Ide::Ui
+} 

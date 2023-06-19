@@ -274,4 +274,4 @@ EditorController::~EditorController()
     delete m_highlighter;
     m_highlighter = nullptr;
 }
-} // namespace ide::ui
+} 

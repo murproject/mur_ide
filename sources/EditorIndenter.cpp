@@ -269,4 +269,4 @@ void EditorIndenter::computeIndent()
     QTextCursor cursor(m_textDocument->findBlockByLineNumber(line));
 }
 
-} // namespace Ide::Ui
+}

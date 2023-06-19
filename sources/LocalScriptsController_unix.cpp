@@ -3,8 +3,6 @@
 #include "ApplicationLogger.hxx"
 #include "EditorController.hxx"
 
-// #include <Windows.h>
-
 namespace Ide::Ui {
 
 LocalScriptsController *LocalScriptsController::instance = nullptr;
@@ -90,4 +88,4 @@ void LocalScriptsController::setupProcess()
             &LocalScriptsController::runningStateChanged);
 }
 
-} // namespace ide::ui
+} 

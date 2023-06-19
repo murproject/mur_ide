@@ -32,4 +32,4 @@ private:
     Q_PID m_pid;
     bool m_isLocal = false;
 };
-} // namespace ide::ui
+} 

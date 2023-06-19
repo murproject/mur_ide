@@ -265,4 +265,4 @@ void EditorSearch::findPrevious()
     auto match = m_matches.at(m_currentMatch);
     emit EditorController::instance->select(match.selectionStart(), match.selectionEnd());
 }
-} // namespace ide::ui
+} 

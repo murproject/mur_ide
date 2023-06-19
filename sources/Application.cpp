@@ -13,6 +13,7 @@
 #include <QSurfaceFormat>
 #include <QWindow>
 #include <QtWebEngine>
+#include <QQuickStyle>
 
 namespace Ide::Ui {
 
@@ -21,17 +22,15 @@ QString Application::m_resourceDirectory = {};
 
 int Application::execute(int argc, char **argv)
 {
-    QtWebEngine::initialize();
     QApplication app(argc, argv);
+    QtWebEngine::initialize();
 
     if (instance == nullptr) {
         instance = new Application;
 
         Ide::Ui::Application::initialize();
         return QApplication::exec();
-    }
-
-    /* Something really bad happened */
+    } 
     return 0xDEADBEAF;
 }
 
@@ -48,9 +47,9 @@ void Application::initialize()
         if (c.unicode() > 127) {
             QMessageBox::critical(nullptr,
                                   "Error (Ошибка)",
-                                  "Looks like the application path contains non ACII characters. "
+                                  "Looks like the application path contains non ASCII characters. "
                                   "Please move it to another directory or reinstall it\n"
-                                  "Путь к приложению содержит символы отличные от ACII (русские "
+                                  "Путь к приложению содержит символы отличные от ASCII (русские "
                                   "буквы). Переместите приложение или переустановите его.",
                                   "OK");
             exit(0xDEADBEAF);
@@ -68,6 +67,19 @@ void Application::initialize()
 
     addFontDirectory();
 
+    QQuickStyle::setStyle("Fusion");
+    QPalette p;
+    p = qApp->palette();
+    p.setColor(QPalette::Window, "#282C34");
+    p.setColor(QPalette::Button, "#363C46");
+    p.setColor(QPalette::Highlight, "#776DAFF2");
+    p.setColor(QPalette::ButtonText, "#FFFFFF");
+    p.setColor(QPalette::Text, "#FFFFFF");
+    p.setColor(QPalette::WindowText, "#BEBEBE");
+    p.setColor(QPalette::ToolTipBase, "#282C34");
+    p.setColor(QPalette::ToolTipText, "#BEBEBE");
+    qApp->setPalette(p);
+
     engine->addImportPath("qrc:/qml");
     engine->addImportPath("qrc:/qml/Ui");
     engine->addImportPath("qrc:/qml/UiElements");
@@ -76,6 +88,7 @@ void Application::initialize()
 
     auto root_object = engine->rootObjects().at(0);
     auto window = dynamic_cast<QWindow *>(root_object);
+    window->setTitle("MUR IDE " + Ide::Ui::ApplicationController::getVersion());
 
     QSurfaceFormat format;
     format.setMajorVersion(3);
@@ -107,5 +120,8 @@ void Application::setupEnvironment()
 void Application::addFontDirectory()
 {
     QFontDatabase::addApplicationFont(":/fonts/fontawesome-webfont.ttf");
+    QFontDatabase::addApplicationFont(":/fonts/NotoSans-Regular.ttf");
+    QFontDatabase::addApplicationFont(":/fonts/NotoSans-Bold.ttf");
+    QFontDatabase::addApplicationFont(":/fonts/NotoMono-Regular.ttf");
 }
-} // namespace Ide::Ui
+} 

@@ -7,7 +7,7 @@ Rectangle {
     property var controller: Controllers.editor.search;
 
     height: column.height;
-    color: "#21252B"
+    color: Style.bgDark
 
     visible: controller.visible;
 
@@ -41,7 +41,7 @@ Rectangle {
         anchors.left: parent.left;
         anchors.right: parent.right;
         height: 1;
-        color: "#181A1F";
+        color: Style.bgDarker;
     }
 
     Column {

@@ -2,6 +2,7 @@
 #include "QmlUtils.hxx"
 #include "EditorController.hxx"
 #include <QObject>
+#include <QString>
 
 namespace Ide::Ui {
 
@@ -13,6 +14,7 @@ class ApplicationLogger;
 class LocalScriptsController;
 class RemoteController;
 class UpdateController;
+class Gamepad;
 
 class ApplicationController : public QObject
 {
@@ -25,6 +27,8 @@ class ApplicationController : public QObject
     Q_PROPERTY(Ide::Ui::LocalScriptsController *scripts READ getScripts CONSTANT)
     Q_PROPERTY(Ide::Ui::RemoteController *image READ getImage CONSTANT)
     Q_PROPERTY(Ide::Ui::UpdateController *updates READ getUpdates CONSTANT)
+    Q_PROPERTY(Ide::Ui::Gamepad *gamepad READ getGamepad CONSTANT)
+    Q_PROPERTY(QString version READ getVersion CONSTANT)
 
 public:
     EditorController *getEditor();
@@ -35,6 +39,11 @@ public:
     LocalScriptsController *getScripts();
     RemoteController *getImage();
     UpdateController *getUpdates();
+    Gamepad *getGamepad();
+
+    static QString getVersion() {
+        return "0.1.0 Beta";
+    }
 
     static ApplicationController *instance;
     static ApplicationController *Create();
@@ -43,4 +52,4 @@ private:
     ApplicationController();
     static qml::RegisterType<ApplicationController> Register;
 };
-} // namespace ide::ui
+} 

@@ -3,26 +3,28 @@ import QtQuick 2.9
 Item {
     id: root;
 
-    width: row.width + 24;
-    height: label.height + 6;
+    width: row.width;
+    height: label.height + 4;
+
     property alias label: label;
     property bool checked: false;
-    property var from;
-    property string bind;
+    property var from: root;
+    property string bind: "checked";
 
     signal clicked;
 
     Row {
         id: row;
-        anchors.centerIn: parent;
+        anchors.left: parent.left;
+        anchors.top: parent.top;
         spacing: 4;
 
         Rectangle {
             anchors.verticalCenter: parent.verticalCenter;
             width: 16;
             height: 16;
-            color: ma.pressed ? "#181A1F" : ma.containsMouse ? "#363C46" : "#333842"
-            border.color: "#181A1F";
+            color: ma.pressed ? Style.bgDarker : ma.containsMouse ? "#363C46" : "#333842"
+            border.color: Style.bgDarker;
             radius: 2;
 
             Icon {
@@ -38,7 +40,7 @@ Item {
             id: label;
             anchors.verticalCenter: parent.verticalCenter;
             font.weight: Font.Medium;
-            color: enabled ? ma.containsMouse ? "#fff" : "#9DA5B4" : "#6E7582";
+            color: enabled ? ma.containsMouse ? "#fff" : "#9DA5B4" : Style.gray;
         }
     }
 

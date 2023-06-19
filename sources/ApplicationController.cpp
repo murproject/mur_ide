@@ -7,6 +7,7 @@
 #include "NetworkController.hxx"
 #include "SimulatorController.hxx"
 #include "UpdateController.hxx"
+#include "Gamepad.hxx"
 
 namespace Ide::Ui {
 
@@ -60,10 +61,15 @@ UpdateController *ApplicationController::getUpdates()
     return UpdateController::instance;
 }
 
+Gamepad *ApplicationController::getGamepad()
+{
+    return Gamepad::instance;
+}
+
 ApplicationController *ApplicationController::Create()
 {
     instance = new ApplicationController();
     return instance;
 }
 
-} //ui
+} 

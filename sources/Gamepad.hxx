@@ -6,97 +6,126 @@
 #include "QmlUtils.hxx"
 
 namespace Ide::Ui {
+
+class GamepadAxes : public QObject
+{
+    Q_OBJECT
+
+public:
+    enum MovementAxes {
+        AxisZero, 
+
+        AxisX,
+        AxisY,
+        AxisW,
+        AxisZ,
+
+        AxisYaw = AxisX,
+        AxisForward = AxisY,
+        AxisSide = AxisW,
+        AxisDepth = AxisZ,
+
+        AxisCount,
+    };
+    Q_ENUM(MovementAxes)
+
+    static QList<QString> GamepadAxesNames;
+    static QList<QString> MovementAxesNames;
+};
+
 class Gamepad : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QGamepad *Gamepad READ getGamepad CONSTANT)
 
-    Q_PROPERTY(QString axisXName READ getAxisXname NOTIFY axisNameChanged)
-    Q_PROPERTY(QString axisYName READ getAxisYname NOTIFY axisNameChanged)
-    Q_PROPERTY(QString axisZName READ getAxisZname NOTIFY axisNameChanged)
+    Q_PROPERTY(bool gamepadConnected READ isGamepadConnected NOTIFY onGamepadConnectedChanged)
 
-    Q_PROPERTY(bool rebindX READ isRebindX NOTIFY axisNameChanged)
-    Q_PROPERTY(bool rebindY READ isRebindY NOTIFY axisNameChanged)
-    Q_PROPERTY(bool rebindZ READ isRebindZ NOTIFY axisNameChanged)
+    Q_PROPERTY(QList<qreal> allAxes READ getAllAxes NOTIFY axesValueChanged)
+    Q_PROPERTY(QList<bool> allAxesInversions READ getAllAxesInversions NOTIFY rebinded)
+    Q_PROPERTY(QList<QString> allAxesBindings READ getAllAxesBindings NOTIFY rebinded)
 
-    Q_PROPERTY(bool inverseX READ isInverseX WRITE setInverseX NOTIFY inverseionChanged)
-    Q_PROPERTY(bool inverseY READ isInverseY WRITE setInverseY NOTIFY inverseionChanged)
-    Q_PROPERTY(bool inverseZ READ isInverseZ WRITE setInverseZ NOTIFY inverseionChanged)
+    Q_PROPERTY(bool isRebinding READ isRebinding NOTIFY rebindingChanged)
+    Q_PROPERTY(int rebindingAxis READ getRebindingAxis NOTIFY rebindingChanged)
 
-    Q_PROPERTY(int axisXValue READ getAxisXvalue NOTIFY axesValueChanged)
-    Q_PROPERTY(int axisYValue READ getAxisYvalue NOTIFY axesValueChanged)
-    Q_PROPERTY(int axisZValue READ getAxisZvalue NOTIFY axesValueChanged)
+    Q_PROPERTY(int deadzone READ getDeadzone WRITE setDeadzone NOTIFY deadzoneChanged)
+    Q_PROPERTY(double expFactor READ getExpFactor WRITE setExpFactor NOTIFY expFactorChanged)
 
 public:
     static Gamepad *instance;
     static Gamepad *Create();
 
     QGamepad *getGamepad();
+    bool isGamepadConnected();
 
 public slots:
+    int getAxisValue(GamepadAxes::MovementAxes);
+    int getAxisValueRaw(int);
+    bool getButtonValue(GamepadAxes::MovementAxes);
 
-    int getAxisXvalue();
-    int getAxisYvalue();
-    int getAxisZvalue();
+    bool getAxisInversion(GamepadAxes::MovementAxes axis);
+    void setAxisInversion(int, bool);
 
-    QString getAxisXname();
-    QString getAxisYname();
-    QString getAxisZname();
+    void clearAxis(int);
+    void requestRebind(int);
+    bool isRebinding();
+    int getRebindingAxis();
+    void swapAxes(int, int);
 
-    void rebindAxisX();
-    void rebindAxisY();
-    void rebindAxisZ();
+    QList<qreal> getAllAxes();
+    QList<bool> getAllAxesInversions();
+    QList<QString> getAllAxesBindings();
+    void setForceAxisValue(int, int);
+    void addForceAxisValue(int, int);
 
-    bool isRebindX();
-    bool isRebindY();
-    bool isRebindZ();
+    QString getGamepadAxisName(int axis);
+    QString getMovementAxisName(int axis);
 
-    bool isInverseX();
-    bool isInverseY();
-    bool isInverseZ();
+    int getDeadzone();
+    void setDeadzone(int);
 
-    void setInverseX(bool);
-    void setInverseY(bool);
-    void setInverseZ(bool);
+    double getExpFactor();
+    void setExpFactor(double);
 
     void saveSettings();
     void loadSettings();
 
+    int calcAxisValue(int);
+
 signals:
-    void axisNameChanged();
-    void inverseionChanged();
+    void onGamepadConnectedChanged(bool);
     void axesValueChanged();
+    void deadzoneChanged();
+    void rebindingChanged();
+    void rebinded();
+    void prorovFunctionsChanged();
+    void expFactorChanged();
 
 private:
-    enum class gamepadAxes { axisLeftX, axisLeftY, axisRightX, axisRightY };
-
-    enum class powerAxes { axisX, axisY, axisZ };
-
     Gamepad();
-    void update();
     static qml::RegisterType<Gamepad> Register;
 
     QGamepad *m_gamepad;
-    QMap<gamepadAxes, double> m_gamepadValues;
-    QMap<powerAxes, gamepadAxes> m_gamepadBinding;
-    QMap<gamepadAxes, QString> m_gamepadAxesNames;
+    QMap<int, double> m_gamepadAllValues;
 
-    void onLeftXChanged();
-    void onLeftYChanged();
-    void onRightXChanged();
-    void onRightYChanged();
+    QMap<GamepadAxes::MovementAxes, int> m_gamepadAxesBindings;
+    QMap<GamepadAxes::MovementAxes, bool> m_gamepadAxesInversions;
 
-    void rebind(gamepadAxes);
+    void rebindAxis(int axis);
 
-    bool isRebindRequested();
+    bool m_isRebinding = false;
+    GamepadAxes::MovementAxes m_currentlyRebindingAxis;
 
-    bool m_rebintXrequested = false;
-    bool m_rebintYrequested = false;
-    bool m_rebintZrequested = false;
+    void axisEvent(int deviceId, QGamepadManager::GamepadAxis axis, double value);
+    void buttonReleaseEvent(int deviceId, QGamepadManager::GamepadButton button);
+    void buttonEvent(int deviceId, QGamepadManager::GamepadButton button, double value);
 
-    bool m_isXinverse = false;
-    bool m_isYinverse = false;
-    bool m_isZinverse = false;
+    int m_deadzone = 0;
+    double m_expFactor = 1.0;
+
+    QTimer* m_updateTimer;
+    void onUpdateTimeout();
+    bool m_axisChanged = false;
+
+    void connectGamepad();
 };
 
-} // namespace ide::ui
+} 

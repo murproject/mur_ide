@@ -57,6 +57,7 @@ void LocalScriptsController::stop()
         return;
     }
     m_scriptProcess->terminate();
+    m_scriptProcess->kill();
 }
 
 bool LocalScriptsController::isRunning()
@@ -112,4 +113,4 @@ void LocalScriptsController::setupProcess()
             &LocalScriptsController::runningStateChanged);
 }
 
-} // namespace ide::ui
+} 
