@@ -79,6 +79,72 @@ Item {
                     }
                 }
             }
+            Repeater {
+                model: [
+                    ["Speed",       GamepadAxes.SpeedSlow,        GamepadAxes.SpeedFast],
+                ];
+
+                RowLayout {
+//                    visible: index == 0 || showAll.checked;
+
+                    UiLabel {
+                        Layout.fillWidth: true;
+                        text: modelData[0] + ":\t";
+                    }
+
+                    UiButton {
+                        label.font.bold: true;
+                        outline: true;
+                        label.opacity: label.text == "···" ? 0.25 : 1.0;
+                        width: column.buttonWidth;
+                        label.text: Controllers.gamepad.allAxesBindings[modelData[1]];
+                        highlight: Controllers.gamepad.rebindingAxis === modelData[1] || Controllers.gamepad.allAxes[modelData[1]] > 50;
+                        onClicked: {
+                             Controllers.gamepad.requestRebind(modelData[1]);
+                        }
+                    }
+
+                    UiButton {
+                        frameless: true;
+                        enabled: false;
+                        width: 25;
+                        icon: Controllers.gamepad.allAxes[modelData[2]] > 50 ? icons.fa_chevron_up   :
+                              Controllers.gamepad.allAxes[modelData[1]] > 50 ? icons.fa_chevron_down :
+                                                                               "·";
+                    }
+
+
+                    UiButton {
+                        label.font.bold: true;
+                        outline: true;
+                        label.opacity: label.text == "···" ? 0.25 : 1.0;
+                        width: column.buttonWidth;
+                        label.text: Controllers.gamepad.allAxesBindings[modelData[2]];
+                        highlight: Controllers.gamepad.rebindingAxis === modelData[2] || Controllers.gamepad.allAxes[modelData[2]] > 50;
+                        onClicked: {
+                             Controllers.gamepad.requestRebind(modelData[2]);
+                        }
+                    }
+
+                    UiButton {
+                        highlight: Controllers.gamepad.allAxesInversions[modelData[1]];
+                        icon: icons.fa_exchange;
+                        toolTip: "Inverse";
+                        onClicked: {
+                            Controllers.gamepad.swapAxes(modelData[1], modelData[2]);
+                        }
+                    }
+
+                    UiButton {
+                        icon: icons.fa_times;
+                        toolTip: "Clear";
+                        onClicked: {
+                            Controllers.gamepad.clearAxis(modelData[1]);
+                            Controllers.gamepad.clearAxis(modelData[2]);
+                        }
+                    }
+                }
+            }
         }
 
         ColumnLayout {

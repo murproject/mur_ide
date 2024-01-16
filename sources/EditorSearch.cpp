@@ -59,7 +59,24 @@ void EditorSearch::replaceNext()
     findNext();
 }
 
-void EditorSearch::replaceAll() {}
+void EditorSearch::replaceAll() {
+    if (!m_valid) {
+        processSearch();
+        return;
+    }
+
+    if (m_matches.count() < 1) {
+        return;
+    }
+
+    for(int i = 0; i < m_matches.count(); i ++)
+    {
+        auto cursor = m_matches.at(m_currentMatch);
+        cursor.insertText(m_replaceString);
+        findNext();
+    }
+    processSearch();
+}
 
 void EditorSearch::setRegexError(const QString &regex_error)
 {
@@ -191,6 +208,16 @@ void EditorSearch::invalidate()
     m_valid = false;
 }
 
+int EditorSearch::getStartPosition()
+{
+    return m_startPosition;
+}
+
+int EditorSearch::getEndPosition()
+{
+    return m_endPosition;
+}
+
 void EditorSearch::processSearch()
 {
     if (m_useRegex && !m_regexValid) {
@@ -227,6 +254,7 @@ void EditorSearch::processSearch()
     }
 
     m_valid = true;
+
     emit matchCountChanged();
 
     findNext();
@@ -242,10 +270,11 @@ void EditorSearch::findNext()
     if (m_matches.count() < 1) {
         return;
     }
-
     setCurrentMatch((m_currentMatch + 1) % m_matches.count());
 
     auto match = m_matches.at(m_currentMatch);
+    m_startPosition = match.selectionStart();
+    m_endPosition = match.selectionEnd();
     emit EditorController::instance->select(match.selectionStart(), match.selectionEnd());
 }
 
@@ -265,4 +294,4 @@ void EditorSearch::findPrevious()
     auto match = m_matches.at(m_currentMatch);
     emit EditorController::instance->select(match.selectionStart(), match.selectionEnd());
 }
-} 
+} // namespace ide::ui

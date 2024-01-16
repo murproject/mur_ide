@@ -30,7 +30,7 @@ Rectangle {
         UiLabel {
             anchors.verticalCenter: parent.verticalCenter;
             text: Controllers.editor.fileUrl.length > 0 ? Controllers.editor.fileUrl : "Empty"
-            width: root.width - 160;
+            width: root.width * 0.7;
             elide: Text.ElideLeft;
             font.pointSize: 10;
         }

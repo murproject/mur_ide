@@ -240,7 +240,7 @@ Rectangle {
             textEdit.clear();
         }
         function onSelect() {
-            textEdit.select(start, end);
+            textEdit.select(editor.search.startPosition, editor.search.endPosition);
         }
     }
 

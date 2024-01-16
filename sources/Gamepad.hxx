@@ -25,6 +25,9 @@ public:
         AxisSide = AxisW,
         AxisDepth = AxisZ,
 
+        SpeedSlow,
+        SpeedFast,
+
         AxisCount,
     };
     Q_ENUM(MovementAxes)

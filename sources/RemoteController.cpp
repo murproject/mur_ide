@@ -499,8 +499,12 @@ void RemoteController::setPipelines(QString watermark) {
 int RemoteController::getSpeedMode() {
     int speed = static_cast<int>(SpeedModes::Mid);
 
+    if (Gamepad::instance->getButtonValue(GamepadAxes::SpeedSlow)) speed = static_cast<int>(SpeedModes::Low);
+    if (Gamepad::instance->getButtonValue(GamepadAxes::SpeedFast)) speed = static_cast<int>(SpeedModes::Max);
+
     return static_cast<int>(speed);
 }
+
 
 void RemoteController::saveSpeedLimits() {
     QSettings settings("settings.ini", QSettings::IniFormat);

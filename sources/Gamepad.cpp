@@ -38,6 +38,8 @@ QList<QString> GamepadAxes::MovementAxesNames = {
     "Axis Y (forward)",
     "Axis W (side)",
     "Axis Z (depth)",
+    "Slower",
+    "Faster",
     "Axis count",
 };
 
@@ -298,6 +300,14 @@ void Gamepad::loadSettings()
 
     if (m_gamepadAxesBindings[GamepadAxes::AxisZ] == 0) {
         m_gamepadAxesBindings[GamepadAxes::AxisZ] = 4;
+    }
+
+    if (m_gamepadAxesBindings[GamepadAxes::SpeedSlow] == 0) {
+        m_gamepadAxesBindings[GamepadAxes::SpeedSlow] = 5;
+    }
+
+    if (m_gamepadAxesBindings[GamepadAxes::SpeedFast] == 0) {
+        m_gamepadAxesBindings[GamepadAxes::SpeedFast] = 6;
     }
 
     m_deadzone = settings.value("Gamepad/deadzone", 0).toInt();

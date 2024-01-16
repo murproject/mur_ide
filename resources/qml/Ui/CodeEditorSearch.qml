@@ -231,8 +231,6 @@ Rectangle {
                     label.text: "Replace All";
                     icon: icons.fa_refresh;
 
-                    enabled: false;
-
                     onClicked: {
                         controller.replaceAll();
                         replaceInput.forceActiveFocus();

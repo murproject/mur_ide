@@ -25,11 +25,7 @@ void EditorHighlighter::init() {
   for (auto i = 0; i < ruleObjects.count(); ++i) {
     ruleObject = ruleObjects.at(i).toObject();
 
-    if (ruleObject[Key::bold].toBool(false)) {
-      format.setFontWeight(QFont::Bold);
-    } else {
-      format.setFontWeight(QFont::Normal);
-    }
+    format.setFontWeight(QFont::Normal);
 
     format.setFontItalic(ruleObject[Key::italic].toBool(false));
 

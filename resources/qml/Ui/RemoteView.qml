@@ -225,7 +225,7 @@ Rectangle {
             }
 
             UiButton {
-                visible: fullWindow.visible;
+                visible: fullWindow.visible && !remoteToolbar.collapsed && remoteFooter.autoButtonsVisible;
                 anchors.verticalCenter: parent.verticalCenter;
                 toolTip: "Toggle compass";
                 label.text: "Compass";
@@ -237,7 +237,7 @@ Rectangle {
             }
 
             UiButton {
-                visible: fullWindow.visible;
+                visible: fullWindow.visible && !remoteToolbar.collapsed && remoteFooter.autoButtonsVisible;
                 anchors.verticalCenter: parent.verticalCenter;
                 toolTip: "Toggle altimeter";
                 label.text: "Altimeter";
