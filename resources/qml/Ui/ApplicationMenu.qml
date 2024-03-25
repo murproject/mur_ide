@@ -1,8 +1,7 @@
 import QtQuick 2.9
 import QtQuick.Controls 2.12
 import QtQml 2.2
-import QtQuick.Controls.Styles 1.4
-
+import QtQml.Models 2.12
 
 MenuBar {
     id: menuBar;
@@ -65,24 +64,24 @@ MenuBar {
     }
 
     ApplicationMenuItem {
-        Loader {
-            id: gamepadPopupLoader;
-            active: false;
-            source: "qrc:/qml/Ui/GamepadSettings.qml";
-        }
         title: qsTr("Settings");
+
+        Loader {
+            id: settingsPopupLoader;
+            active: false;
+            source: "qrc:/qml/Ui/SettingsPanel.qml";
+        }
+
         Action {
-            enabled: Controllers.image.Gamepad.Gamepad.connected;
-            text: qsTr("Gamepad");
+            text: qsTr("IDE settings");
             onTriggered: {
-                if(gamepadPopupLoader.active) {
-                    gamepadPopupLoader.item.open();
-                }
-                else {
-                    gamepadPopupLoader.active = true;
-                    }
+                if (settingsPopupLoader.active) {
+                    settingsPopupLoader.item.open();
+                } else {
+                    settingsPopupLoader.active = true;
                 }
             }
+        }
     }
 
     ApplicationMenuItem {
@@ -140,9 +139,9 @@ MenuBar {
 
                     contentItem: Text {
                         text: exampleMenuItem.text;
-                        font.family: "Segoe WPC";
+                        font.family: Style.fontSans;
                         font.pointSize: 10;
-                        color: exampleMenuItem.highlighted ? "#9DA5B4" : "#6E7582";
+                        color: exampleMenuItem.highlighted ? Style.lightGray : Style.gray;
                         horizontalAlignment: Text.AlignLeft;
                         verticalAlignment: Text.AlignVCenter;
                         elide: Text.ElideRight;
@@ -153,7 +152,7 @@ MenuBar {
                         implicitWidth: 40;
                         implicitHeight: 10;
                         opacity: enabled ? 1 : 0.3;
-                        color: exampleMenuItem.highlighted ? "#181A1F" : "transparent";
+                        color: exampleMenuItem.highlighted ? Style.bgDarker : "transparent";
                     }
                 }
             }
@@ -165,9 +164,9 @@ MenuBar {
 
         contentItem: Text {
             text: menuBarItem.text;
-            font.family: "Segoe WPC";
+            font.family: Style.fontSans;
             font.pointSize: 10;
-            color: menuBarItem.highlighted ? "#9DA5B4" : "#6E7582";
+            color: menuBarItem.highlighted ? "#9DA5B4" : Style.gray;
             horizontalAlignment: Text.AlignLeft;
             verticalAlignment: Text.AlignVCenter;
             elide: Text.ElideRight;
@@ -178,17 +177,17 @@ MenuBar {
             implicitWidth: 40;
             implicitHeight: 8;
             opacity: enabled ? 1 : 0.3;
-            color: menuBarItem.highlighted ? "#181A1F" : "transparent";
+            color: menuBarItem.highlighted ? Style.bgDarker : "transparent";
         }
     }
 
     background: Rectangle {
         implicitWidth: 40;
         implicitHeight: 8;
-        color: "#21252B";
+        color: Style.bgDark;
 
         Rectangle {
-            color: "#181A1F";
+            color: Style.bgDarker;
             width: parent.width;
             height: 1;
             anchors.bottom: parent.bottom;

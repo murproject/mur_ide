@@ -12,21 +12,30 @@ ApplicationLogger *ApplicationLogger::Create()
 
 void ApplicationLogger::addEntry(const QString &string)
 {
-    if (m_entries.size() > 4500) {
-        clear();
-    }
-    m_entries.append(string);
+    m_output += "<br>" + string + "<br>";
+    emit outputChanged();
 }
 
-QStringList ApplicationLogger::getEntries()
+void ApplicationLogger::addOutput(const QString &output, const QString &error)
 {
-    return m_entries;
+    m_output += output;
+    m_output += "<br>";
+    if (!error.isEmpty()) {
+        m_output += "<font color=\"#E74C3C\">" + error + "</font><br>";
+    }
+}
+
+QString ApplicationLogger::getOutput()
+{
+    static const QString header = "<tt style=\"white-space:pre-wrap;border: 1px solid yellow;\">";
+    static const QString footer = "</tt>";
+    return header + m_output + footer;
 }
 
 void ApplicationLogger::clear()
 {
-    m_entries.clear();
-    emit entriesChanged();
+    m_output.clear();
+    emit outputChanged();
 }
 
 ApplicationLogger::ApplicationLogger()
@@ -36,16 +45,17 @@ ApplicationLogger::ApplicationLogger()
     }
     m_updateViewTimer = new QTimer;
     connect(m_updateViewTimer, &QTimer::timeout, this, &ApplicationLogger::onUpdate);
-    m_updateViewTimer->start(150);
+    m_updateViewTimer->start(200);
 }
 
 void ApplicationLogger::onUpdate()
 {
-    static int entries_last_size = 0;
-    if (entries_last_size != m_entries.size()) {
-        emit entriesChanged();
-        entries_last_size = m_entries.size();
+    static long unsigned last_output_size = 0;
+    if (last_output_size != m_output.length()) {
+        m_output = m_output.right(20000);
+        last_output_size = m_output.length();
+        emit outputChanged();
     }
 }
 
-} // namespace ide::ui
+} 

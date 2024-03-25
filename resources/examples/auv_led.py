@@ -20,6 +20,6 @@ if __name__ == '__main__':
     auv.set_rgb_color(0, 50, 0)
     time.sleep(3)
     # Красный
-    auv.set_rgb_color(0, 50, 0)
+    auv.set_rgb_color(50, 0, 0)
     time.sleep(3)
 

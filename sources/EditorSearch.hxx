@@ -16,6 +16,8 @@ class EditorSearch : public QObject
     Q_PROPERTY(QString regexError READ getRegexError NOTIFY regexErrorChanged)
     Q_PROPERTY(int currentMatch READ getCurrentMatch NOTIFY currentMatchChanged)
     Q_PROPERTY(int matchCount READ getMatchCount NOTIFY matchCountChanged)
+    Q_PROPERTY(int startPosition READ getStartPosition NOTIFY startPositionChanged)
+    Q_PROPERTY(int endPosition READ getEndPosition NOTIFY endPositionChanged)
     Q_PROPERTY(bool caseSensitive READ getCaseSensitive WRITE setCaseSensitive NOTIFY caseSensitiveChanged)
     Q_PROPERTY(bool useRegex READ getUseRegex WRITE setUseRegex NOTIFY useRegexChanged)
     Q_PROPERTY(bool regexValid READ getRegexValid NOTIFY regexValidChanged)
@@ -45,6 +47,8 @@ public:
     void setCurrentMatch(int);
     int getCurrentMatch();
     int getMatchCount();
+    int getStartPosition();
+    int getEndPosition();
     void invalidate();
 
 public slots:
@@ -62,6 +66,8 @@ signals:
     void caseSensitiveChanged();
     void replaceStringChanged();
     void matchCountChanged();
+    void startPositionChanged();
+    void endPositionChanged();
 
 private:
     bool m_visible = false;
@@ -75,6 +81,8 @@ private:
     bool m_useRegex = false;
     bool m_valid = false;
     int m_currentMatch = -1;
+    int m_startPosition = 0;
+    int m_endPosition = 0;
     EditorSearch();
 };
 }

@@ -7,27 +7,28 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_REQUIRED_FLAGS -std=c++17)
 
-set(OpenCV_DIR C:/Libraries/LibOpenCV)
-
-
+find_package(SDL2 REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(Threads)
 
-find_package(Qt5 REQUIRED COMPONENTS
+find_package(Qt6 REQUIRED COMPONENTS
         Core
         Widgets
-        SerialPort
         WebSockets
-        WebEngine
+        WebEngineQuick
         PrintSupport
         Qml
         Quick
+        QuickControls2
         Gui
-        Gamepad
         Concurrent)
 
+
 add_executable(${PROJECT_NAME} WIN32 resources/icon.rc)
-#add_executable(${PROJECT_NAME} resources/icon.rc)
+
+file(GLOB QJoystick "${QJoy}/src/*.cpp" "${QJoy}/src/*.h"
+    "${QJoy}/src/QJoysticks/*.cpp" "${QJoy}/src/QJoysticks/*.h"
+)
 
 target_sources(${PROJECT_NAME}
         PRIVATE sources/main.cpp
@@ -67,8 +68,6 @@ target_sources(${PROJECT_NAME}
         PRIVATE sources/RemoteController.hxx
         PRIVATE sources/QmlImageItem.cpp
         PRIVATE sources/QmlImageItem.hxx
-        PRIVATE sources/Gamepad.cpp
-        PRIVATE sources/Gamepad.hxx
         PRIVATE sources/EditorIndenter.cpp
         PRIVATE sources/EditorIndenter.hxx
         PRIVATE sources/SettingsController.cpp
@@ -80,7 +79,11 @@ target_sources(${PROJECT_NAME}
         PRIVATE sources/HintBase.cpp
         PRIVATE sources/HintBase.hxx
         PRIVATE sources/ApiTokenDialog.cpp
-        PRIVATE sources/ApiTokenDialog.hxx)
+        PRIVATE sources/ApiTokenDialog.hxx
+        PRIVATE sources/Joystick.cpp
+        PRIVATE sources/Joystick.hxx
+        PRIVATE ${QJoystick}
+    )
 
 if (WIN32)
     target_sources(${PROJECT_NAME}
@@ -93,18 +96,27 @@ endif()
 target_compile_features(${PROJECT_NAME}
         PRIVATE cxx_std_17)
 
+target_include_directories(${PROJECT_NAME} PRIVATE
+    ${SDL2_DIR}/include
+    ${QJoy}/src
+)
+
+target_compile_definitions(${PROJECT_NAME} PRIVATE
+    SDL_SUPPORTED
+)
+
 target_link_libraries(${PROJECT_NAME}
-        PRIVATE Qt5::SerialPort
-        PRIVATE Qt5::Core
-        PRIVATE Qt5::Widgets
-        PRIVATE Qt5::WebSockets
-        PRIVATE Qt5::PrintSupport
-        PRIVATE Qt5::WebEngine
-        PRIVATE Qt5::Qml
-        PRIVATE Qt5::Quick
-        PRIVATE Qt5::Gui
-        PRIVATE Qt5::Gamepad
-        PRIVATE Qt5::Concurrent
+        PRIVATE Qt6::Core
+        PRIVATE Qt6::Widgets
+        PRIVATE Qt6::WebSockets
+        PRIVATE Qt6::PrintSupport
+        PRIVATE Qt6::WebEngineQuick
+        PRIVATE Qt6::Qml
+        PRIVATE Qt6::Quick
+        PRIVATE Qt6::QuickControls2
+        PRIVATE Qt6::Gui
+        PRIVATE Qt6::Concurrent
         PRIVATE ${OpenCV_LIBS}
+        ${SDL2_LIBRARIES}
         ${CMAKE_THREAD_LIBS_INIT})
 

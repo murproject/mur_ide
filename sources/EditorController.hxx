@@ -1,19 +1,17 @@
 #pragma once
 
 #include "QmlUtils.hxx"
+#include "EditorErrors.hxx"
+#include "EditorHighlighter.hxx"
+#include "EditorIndenter.hxx"
+#include "EditorHints.hxx"
+#include "EditorSearch.hxx"
+#include "EditorSelection.hxx"
 
 #include <QObject>
 #include <QQuickTextDocument>
 
 namespace Ide::Ui {
-
-class EditorUtils;
-class EditorSearch;
-class EditorErrors;
-class editorSelection;
-class EditorHighlighter;
-class EditorIndenter;
-class EditorHints;
 
 class EditorController : public QObject
 {
@@ -27,11 +25,11 @@ class EditorController : public QObject
     Q_PROPERTY(QString fileUrl READ getFileUrl NOTIFY fileUrlChanged)
     Q_PROPERTY(QString fileName READ getFileName NOTIFY fileNameChanged)
     Q_PROPERTY(QQuickTextDocument *document READ getDocument WRITE setDocument NOTIFY documentChanged)
-    Q_PROPERTY(Ide::Ui::EditorErrors *errors READ getErrors CONSTANT)
-    Q_PROPERTY(Ide::Ui::EditorSearch *search READ getSearch CONSTANT)
-    Q_PROPERTY(Ide::Ui::editorSelection *selection READ getSelection CONSTANT)
-    Q_PROPERTY(Ide::Ui::EditorIndenter *indenter READ getIndenter CONSTANT)
-    Q_PROPERTY(Ide::Ui::EditorHints *hints READ getHints CONSTANT)
+    Q_PROPERTY(EditorErrors *errors READ getErrors CONSTANT)
+    Q_PROPERTY(EditorSearch *search READ getSearch CONSTANT)
+    Q_PROPERTY(editorSelection *selection READ getSelection CONSTANT)
+    Q_PROPERTY(EditorIndenter *indenter READ getIndenter CONSTANT)
+    Q_PROPERTY(EditorHints *hints READ getHints CONSTANT)
 public:
     friend class Util;
     static EditorController *instance;
@@ -112,4 +110,4 @@ private:
     void observedFileChanged(const QString &);
     void observeFile(const QString &);
 };
-} // namespace ide::ui
+} 

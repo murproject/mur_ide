@@ -9,27 +9,29 @@ namespace Ide::Ui {
 class ApplicationLogger : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QStringList entries READ getEntries NOTIFY entriesChanged)
+    Q_PROPERTY(QString output READ getOutput NOTIFY outputChanged)
 public:
     static ApplicationLogger *instance;
     static ApplicationLogger *Create();
 
     void addEntry(const QString &);
-    QStringList getEntries();
+    void addOutput(const QString &, const QString &);
+    QString getOutput();
 
 public slots:
     void clear();
 
 signals:
-    void entriesChanged();
+    void outputReceived(const QString &, const QString &);
+    void outputChanged();
 
 private:
     ApplicationLogger();
     void onUpdate();
 
     static qml::RegisterType<ApplicationLogger> Register;
-    QStringList m_entries;
+    QString m_output;
     QTimer *m_updateViewTimer;
 };
 
-} // namespace ide::ui
+}

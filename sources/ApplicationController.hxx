@@ -1,30 +1,33 @@
 #pragma once
 #include "QmlUtils.hxx"
 #include "EditorController.hxx"
+#include "ApplicationLogger.hxx"
+#include "ApplicationMenu.hxx"
+#include "RemoteController.hxx"
+#include "LocalScriptsController.hxx"
+#include "NetworkController.hxx"
+#include "SimulatorController.hxx"
+#include "UpdateController.hxx"
+#include "Joystick.hxx"
 #include <QObject>
+#include <QString>
 
 namespace Ide::Ui {
-
-class EditorController;
-class ApplicationMenu;
-class NetworkController;
-class SimulatorController;
-class ApplicationLogger;
-class LocalScriptsController;
-class RemoteController;
-class UpdateController;
 
 class ApplicationController : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(Ide::Ui::EditorController *editor READ getEditor CONSTANT)
-    Q_PROPERTY(Ide::Ui::ApplicationMenu *menu READ getMenu CONSTANT)
-    Q_PROPERTY(Ide::Ui::NetworkController *network READ getNetwork CONSTANT)
-    Q_PROPERTY(Ide::Ui::SimulatorController *simulator READ getSimulator CONSTANT)
-    Q_PROPERTY(Ide::Ui::ApplicationLogger *logger READ getLogger CONSTANT)
-    Q_PROPERTY(Ide::Ui::LocalScriptsController *scripts READ getScripts CONSTANT)
-    Q_PROPERTY(Ide::Ui::RemoteController *image READ getImage CONSTANT)
-    Q_PROPERTY(Ide::Ui::UpdateController *updates READ getUpdates CONSTANT)
+    Q_PROPERTY(EditorController *editor READ getEditor CONSTANT)
+    Q_PROPERTY(ApplicationMenu *menu READ getMenu CONSTANT)
+    Q_PROPERTY(NetworkController *network READ getNetwork CONSTANT)
+    Q_PROPERTY(SimulatorController *simulator READ getSimulator CONSTANT)
+    Q_PROPERTY(ApplicationLogger *logger READ getLogger CONSTANT)
+    Q_PROPERTY(LocalScriptsController *scripts READ getScripts CONSTANT)
+    Q_PROPERTY(RemoteController *image READ getImage CONSTANT)
+    Q_PROPERTY(UpdateController *updates READ getUpdates CONSTANT)
+    Q_PROPERTY(Ide::Ui::Joystick *joystick READ getJoystick CONSTANT)
+    Q_PROPERTY(QString version READ getVersion CONSTANT)
+    Q_PROPERTY(bool devMode READ developerMode CONSTANT)
 
 public:
     EditorController *getEditor();
@@ -35,6 +38,12 @@ public:
     LocalScriptsController *getScripts();
     RemoteController *getImage();
     UpdateController *getUpdates();
+    Joystick *getJoystick();
+
+    static bool developerMode();
+    static QString getVersion() {
+        return "0.1.0";
+    }
 
     static ApplicationController *instance;
     static ApplicationController *Create();
@@ -43,4 +52,4 @@ private:
     ApplicationController();
     static qml::RegisterType<ApplicationController> Register;
 };
-} // namespace ide::ui
+} 

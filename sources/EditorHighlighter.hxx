@@ -2,6 +2,7 @@
 
 #include <QString>
 #include <QSyntaxHighlighter>
+#include <QRegularExpression>
 
 namespace Ide::Ui {
 
@@ -17,7 +18,7 @@ private:
     static constexpr auto bold = "bold";
   };
   struct Rule {
-    QRegExp pattern;
+    QRegularExpression pattern;
     QTextCharFormat format;
   };
   QList<Rule> m_rules;

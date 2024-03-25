@@ -13,4 +13,4 @@ QList<std::function<void()>> &getControllersInitializersList() {
   return List;
 }
 
-} //ui
+} 

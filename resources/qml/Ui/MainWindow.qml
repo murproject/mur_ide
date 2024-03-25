@@ -1,19 +1,22 @@
 import QtQuick 2.11
 import QtQuick.Controls 2.4
+
 import QtQml 2.2
 import QtWebView 1.1
+import QtQuick.Layouts 1.12
 
 ApplicationWindow {
     id: root;
     visible: true;
     width: 640;
-    height: 480;
-    color: "#282C34";
+    height: 640;
+    color: Style.bgBlue;
     minimumWidth: 640;
     minimumHeight: 640;
 
     menuBar: ApplicationMenu {
         id: menu;
+        visible: !fullWindow.visible;
     }
 
     Loader {
@@ -32,13 +35,6 @@ ApplicationWindow {
         anchors.right: parent.right;
         anchors.top: parent.top;
     }
-    /*
-    CodeEditor {
-        anchors.top: header.bottom;
-        anchors.left: parent.left;
-        anchors.bottom: parent.bottom;
-        anchors.right: parent.right;
-    } */
 
     SplitView {
         id: spliter;
@@ -46,18 +42,18 @@ ApplicationWindow {
         anchors.left: parent.left;
         anchors.right: parent.right;
         anchors.bottom: footer.top;
+
         leftItem: CodeEditor {
              anchors.fill: parent;
         }
 
-
-        rightItem :   TabView {
+        rightItem: TabView {
+            id: tabView;
             anchors.fill: parent;
 
             ApplicationLogger {
                 anchors.fill: parent
             }
-
 
             WebView {
                 property string tabTitle: "Help";
@@ -67,15 +63,47 @@ ApplicationWindow {
 
             RemoteView {
                 anchors.fill: parent
-                property string tabTitle: "Remote";
             }
         }
     }
+
     ApplicationStatusBar {
         id: footer;
-
         anchors.left: parent.left;
         anchors.right: parent.right;
         anchors.bottom: parent.bottom;
+    }
+
+    Notifications {
+        id: notifications;
+    }
+
+    Item {
+        id: fullWindow;
+        visible: false;
+        anchors.left: parent.left;
+        anchors.right: parent.right;
+        anchors.top: parent.top;
+        anchors.bottom: parent.bottom;
+
+        ColumnLayout {
+            id: fullWindowContainer;
+            anchors.fill: parent;
+        }
+
+        Item {
+            id: fullWindowTop;
+            anchors.fill: parent;
+
+            Compass {
+                id: compass;
+                visible: Controllers.network.rov;
+            }
+
+            Altimeter {
+                id: altimeter;
+                visible: Controllers.network.rov;
+            }
+        }
     }
 }

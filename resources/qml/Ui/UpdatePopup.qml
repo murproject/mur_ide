@@ -1,7 +1,6 @@
 import QtQuick 2.11
 import QtQuick.Controls 2.12
 import QtQml 2.2
-import QtQuick.Controls.Styles 1.4
 
 Popup {
     id: updatePopup;
@@ -10,26 +9,25 @@ Popup {
     closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside;
     modal: true;
     visible: true;
-    parent: ApplicationWindow.overlay;
+    parent: fullWindow;
     width: 350;
-    height: 120;
+    height: 200;
     property var controller: Controllers.updates;
 
     background: Rectangle {
         anchors.fill: parent;
-        color: "#21252B";
-        border.width: 0;
-        border.color: "#181A1F";
+        color: Style.bgDark;
+        border.width: 1;
+        border.color: Style.bgDarker;
     }
 
     Rectangle {
-
         id: remoteHeader;
         height: 22;
         anchors.top: parent.top;
         anchors.left: parent.left;
         anchors.right: parent.right;
-        color: "#21252B";
+        color: Style.bgDark;
 
         UiLabel {
             text: "Update settings";
@@ -42,7 +40,7 @@ Popup {
 
         anchors.bottom: remoteHeader.bottom;
         height: 1;
-        color: "#181A1F";
+        color: Style.bgDarker;
     }
 
     Row {
@@ -60,19 +58,23 @@ Popup {
         }
     }
 
-    Rectangle {
-        id: updateFooter;
-        height: 22;
+    Column {
         anchors.left: parent.left;
         anchors.right: parent.right;
         anchors.bottom: parent.bottom;
-        color: "#21252B";
 
         Row {
-            anchors.right: parent.right;
-            anchors.top: parent.top;
-            anchors.bottom: parent.bottom;
-            anchors.leftMargin: 8;
+            anchors.horizontalCenter: parent.horizontalCenter;
+            bottomPadding: 8;
+            UiCheckbox {
+                label.text: "Check for updates on start";
+                from: controller;
+                bind: "checkUpdate";
+            }
+        }
+
+        Row {
+            anchors.horizontalCenter: parent.horizontalCenter;
             spacing: 4;
 
             UiButton {
@@ -85,7 +87,6 @@ Popup {
                         controller.onUpdate();
                         updatePopup.close();
                     }
-
                 }
             }
 
@@ -95,19 +96,6 @@ Popup {
                 onClicked: {
                     updatePopup.close();
                 }
-            }
-
-        }
-
-        Row {
-            anchors.left: parent.left;
-            anchors.top: parent.top;
-            anchors.bottom: parent.bottom;
-
-            UiCheckbox {
-                label.text: "Check for updates";
-                from: controller;
-                bind: "checkUpdate";
             }
         }
     }

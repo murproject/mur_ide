@@ -34,12 +34,8 @@ public:
       void onViewResetFontSize();
       void onViewToggleEditor();
 
-      void onHelpDocumentation();
-      void onHelpAbout();
-      void onHelpPreferences();
-      void onHelpVisitOnGitHub();
-      void onHelpSendFeedback();
       void onHelpExample(const QString &);
+      void onRestart();
 
   private:
   QStringList m_examples;

@@ -1,7 +1,6 @@
 import QtQuick 2.11
 import QtQuick.Controls 2.12
 import QtQml 2.2
-import QtQuick.Controls.Styles 1.4
 import Hints 1.0
 
 Rectangle {
@@ -11,14 +10,13 @@ Rectangle {
 
     clip: true;
 
-    color: "#181A1F"
+    color: Style.bgDarker
 
     function activate() {
         textEdit.forceActiveFocus();
     }
 
     Flickable {
-
         id: flickable;
 
         anchors.left: lines.right;
@@ -30,9 +28,10 @@ Rectangle {
         contentHeight: textEdit.height;
 
         boundsBehavior: Flickable.StopAtBounds
-
         ScrollBar.vertical: ScrollBar { }
         ScrollBar.horizontal: ScrollBar { }
+
+        maximumFlickVelocity : 1100.0;
 
         function updateScrollX(x) {
             if (contentX >= x) {
@@ -59,7 +58,7 @@ Rectangle {
             y: textEdit.cursorY;
             height: textEdit.cursorHeight;
 
-            color: "#21252B"
+            color: Style.bgDark
         }
 
         Repeater {
@@ -91,7 +90,6 @@ Rectangle {
             property bool showCursor: true;
 
             Keys.onPressed: {
-
                 if ((event.key === Qt.Key_Z || event.key === Qt.Key_Y) &&
                     (Qt.ShiftModifier && Qt.ControlModifier || Qt.ControlModifier))
                 {
@@ -114,36 +112,7 @@ Rectangle {
                     editor.hints.applyHint(Hints.HINT_COMMENT);
                     event.accepted = true;
                 }
-
             }
-
-//            Loader {
-//                id: autoCompleateLoader;
-//                active: false;
-//                source: "qrc:/qml/Ui/AutoCompliter.qml";
-//                x: textEdit.cursorX;
-//                y: textEdit.cursorY + textEdit.cursorHeight;
-//            }
-
-//            Shortcut {
-//                sequence: "Ctrl+Space";
-//                onActivated: {
-//                    if(!autoCompleateLoader.active) {
-//                        autoCompleateLoader.active = true;
-//                        autoCompleateLoader.forceActiveFocus();
-//                    }
-//                    else {
-//                        autoCompleateLoader.active = false;
-//                        autoCompleateLoader.activeFocusOnTab = true;
-//                    }
-//                }
-//            }
-
-//            onTextChanged: {
-//                if (autoCompleateLoader.active) {
-//                    autoCompleateLoader.active = false;
-//                }
-//            }
 
             onActiveFocusChanged: {
                 if (activeFocus) {
@@ -169,6 +138,17 @@ Rectangle {
                 width: 1.5;
                 color: "orange";
                 visible: textEdit.showCursor && !textEdit.multiSelection;
+                antialiasing: true;
+                smooth: true;
+            }
+
+            MouseArea {
+                anchors.fill: parent;
+                enabled: !textEdit.activeFocus;
+                cursorShape: Qt.IBeamCursor;
+                onClicked: {
+                    root.activate();
+                }
             }
 
             function activateCursor() {
@@ -183,7 +163,7 @@ Rectangle {
 
             Timer {
                 id: cursorTimer;
-                interval: 535;// Controllers.settings.cursorFlashTime;
+                interval: 535;
                 running: true;
                 repeat: true;
                 onTriggered: textEdit.showCursor = !textEdit.showCursor;
@@ -199,7 +179,7 @@ Rectangle {
         anchors.top: parent.top;
         anchors.bottom: footer.top;
 
-        color: "#181A1F"
+        color: Style.bgDarker
 
         width: linesCol.width + 4;
 
@@ -220,7 +200,7 @@ Rectangle {
                     font.pointSize: editor.fontSize;
                     verticalAlignment: Text.AlignVCenter;
 
-                    color: index  >= editor.selection.startLine && index <= editor.selection.endLine ? "#fff" : "#6E7582"
+                    color: index  >= editor.selection.startLine && index <= editor.selection.endLine ? Style.white : Style.gray
                     text: index + 1;
                 }
             }
@@ -232,7 +212,7 @@ Rectangle {
             anchors.right: parent.right;
 
             width: 1;
-            color: "#21252B"
+            color: Style.bgDark
         }
     }
 
@@ -246,14 +226,6 @@ Rectangle {
         refocus: textEdit;
     }
 
-    MouseArea {
-        anchors.fill: parent;
-        enabled: !textEdit.activeFocus;
-        onClicked: {
-            root.activate();
-        }
-    }
-
     CodeEditorFooter {
         id: footer;
         anchors.left: parent.left;
@@ -263,12 +235,12 @@ Rectangle {
 
     Connections {
         target: editor;
-        onClear: textEdit.clear();
-    }
-
-    Connections {
-        target: editor;
-        onSelect: textEdit.select(start, end);
+        function onClear () {
+            textEdit.clear();
+        }
+        function onSelect() {
+            textEdit.select(editor.search.startPosition, editor.search.endPosition);
+        }
     }
 
     Component.onCompleted: {

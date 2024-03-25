@@ -23,7 +23,6 @@ public:
     virtual void apply() = 0;
 
 protected:
-    //TODO(Alexey): Move getLinesCount into editorSelection
     int getLinesCount();
 
     static constexpr int indentWidth = 4;
@@ -32,4 +31,3 @@ protected:
 };
 
 }
-// HINTBASE_HXX

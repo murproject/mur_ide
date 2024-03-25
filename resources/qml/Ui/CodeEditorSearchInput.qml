@@ -8,7 +8,7 @@ TextInput {
     property alias radius: rect.radius;
     property alias background: rect.color;
 
-    property color borderDefault: "#181A1F"
+    property color borderDefault: Style.bgDarker
     property color borderActive: "#9DA5B4"
 
     leftPadding: 4;
@@ -18,8 +18,8 @@ TextInput {
     selectedTextColor: "#000";
     selectionColor: root.borderActive;
 
-    font.family: "Roboto";
-    font.pointSize: 13;
+    font.family: Style.fontSans;
+    font.pointSize: 12;
     verticalAlignment: TextInput.AlignVCenter;
 
     activeFocusOnPress: true;

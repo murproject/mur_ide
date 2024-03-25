@@ -45,4 +45,4 @@ private:
     bool m_isCheckForUpdate = false;
 };
 
-} // namespace Ide::Ui
+} 

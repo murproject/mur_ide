@@ -24,7 +24,7 @@ Rectangle {
         label.text: error.message;
         label.font.pointSize: Controllers.editor.fontSize - 2;
 
-        color: "#181A1F"
+        color: Style.bgDarker
         border.color: root.color;
     }
 }

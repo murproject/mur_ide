@@ -1,12 +1,4 @@
 #include "ApplicationController.hxx"
-#include "ApplicationLogger.hxx"
-#include "ApplicationMenu.hxx"
-#include "EditorController.hxx"
-#include "RemoteController.hxx"
-#include "LocalScriptsController.hxx"
-#include "NetworkController.hxx"
-#include "SimulatorController.hxx"
-#include "UpdateController.hxx"
 
 namespace Ide::Ui {
 
@@ -60,10 +52,22 @@ UpdateController *ApplicationController::getUpdates()
     return UpdateController::instance;
 }
 
+Joystick *ApplicationController::getJoystick()
+{
+    return Joystick::instance;
+}
+
 ApplicationController *ApplicationController::Create()
 {
     instance = new ApplicationController();
     return instance;
 }
 
-} //ui
+bool ApplicationController::developerMode()
+{
+    QSettings settings("settings.ini", QSettings::IniFormat);
+    bool mode = settings.value("DevMode/active", false).toBool();
+    return mode;
+}
+
+} 

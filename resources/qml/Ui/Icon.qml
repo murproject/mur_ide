@@ -12,7 +12,15 @@ Text {
     font.family: "FontAwesome";
     font.pointSize: 13;
     style: Text.Normal;
-    color: enabled ? "#9DA5B4" : "#6E7582"
+    color: enabled ? Style.lightGray : Style.darkGray;
     textFormat: Text.PlainText;
-    verticalAlignment: Text.AlignHCenter;
+    verticalAlignment: Text.AlignVCenter;
+    horizontalAlignment: Text.AlignHCenter;
+
+    Behavior on color {
+        ColorAnimation {
+            duration: Style.animFastest;
+            easing.type: Style.animEasing;
+        }
+    }
 }

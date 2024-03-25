@@ -47,7 +47,7 @@ void LocalScriptsController::run()
                             QStringList() << "/c" << py_path << script_path << "&"
                                           << "pause");
     m_scriptProcess->waitForStarted();
-    m_pid = m_scriptProcess->pid();
+    m_pid = m_scriptProcess->processId();
     ApplicationLogger::instance->addEntry("Program started.");
 }
 
@@ -57,6 +57,7 @@ void LocalScriptsController::stop()
         return;
     }
     m_scriptProcess->terminate();
+    m_scriptProcess->kill();
 }
 
 bool LocalScriptsController::isRunning()
@@ -107,9 +108,9 @@ void LocalScriptsController::setupProcess()
             &LocalScriptsController::runningStateChanged);
 
     connect(m_scriptProcess,
-            qOverload<int>(&QProcess::finished),
+            qOverload<int, QProcess::ExitStatus>(&QProcess::finished),
             this,
             &LocalScriptsController::runningStateChanged);
 }
 
-} // namespace ide::ui
+} 

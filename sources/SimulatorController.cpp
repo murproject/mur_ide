@@ -25,7 +25,7 @@ void SimulatorController::setup_process()
             &SimulatorController::runningStateChanged);
 
     connect(m_simulator_process,
-            qOverload<int>(&QProcess::finished),
+            qOverload<int, QProcess::ExitStatus>(&QProcess::finished),
             this,
             &SimulatorController::runningStateChanged);
 }
@@ -64,4 +64,4 @@ SimulatorController::~SimulatorController()
     }
 }
 
-} // namespace ide::ui
+} 

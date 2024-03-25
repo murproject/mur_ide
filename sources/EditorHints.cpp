@@ -135,4 +135,4 @@ void EditorHints::declareQML() {
     qmlRegisterType<EditorHints>("Hints", 1, 0, "Hints");
 }
 
-} // namespace Ide::Ui
+} 

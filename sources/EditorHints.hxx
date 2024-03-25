@@ -15,7 +15,6 @@ class EditorHints : public QObject
 {
     Q_OBJECT
 public:
-    //TODO(Alexey): Make enum's names PascalCased
     enum HintType { HINT_COMMENT, HINT_INSERT_INDENT, HINT_REMOVE_INDENT };
     Q_ENUMS(HintType)
 
@@ -37,4 +36,4 @@ private:
     QTextDocument *m_textDocument = nullptr;
 };
 
-} // namespace ide::ui
+} 

@@ -25,4 +25,4 @@ private:
     QImage m_image;
 };
 
-} // namespace ide::ui
+} 

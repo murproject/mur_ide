@@ -29,7 +29,7 @@ private:
     static qml::RegisterType<LocalScriptsController> Register;
     void setupProcess();
     QProcess *m_scriptProcess = nullptr;
-    Q_PID m_pid;
+    qint64 m_pid;
     bool m_isLocal = false;
 };
-} // namespace ide::ui
+} 
