@@ -3,8 +3,6 @@
 #include "ApplicationLogger.hxx"
 #include "EditorController.hxx"
 
-// #include <Windows.h>
-
 namespace Ide::Ui {
 
 LocalScriptsController *LocalScriptsController::instance = nullptr;
@@ -85,9 +83,9 @@ void LocalScriptsController::setupProcess()
             &LocalScriptsController::runningStateChanged);
 
     connect(m_scriptProcess,
-            qOverload<int>(&QProcess::finished),
+            qOverload<int, QProcess::ExitStatus>(&QProcess::finished),
             this,
             &LocalScriptsController::runningStateChanged);
 }
 
-} // namespace ide::ui
+} 

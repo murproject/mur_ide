@@ -1,4 +1,4 @@
-import QtQuick 2.9
+import QtQuick 2.12
 
 Item {
     id: root;
@@ -7,6 +7,11 @@ Item {
 
     property var visibleItem: undefined;
     property int selectedIndex: -1;
+    property int itemsCount: container.children.length;
+
+    function selectTab(index) {
+        selectedIndex = index;
+    }
 
     Item {
         id: container;
@@ -33,7 +38,7 @@ Item {
         anchors.right: parent.right;
         anchors.bottom: parent.bottom;
 
-        color: "#21252B";
+        color: Style.bgDark;
 
         height: 22;
         clip: true;
@@ -54,12 +59,10 @@ Item {
                     anchors.bottom: parent.bottom;
                     anchors.bottomMargin: 1;
                     radius: 4;
-
-                    color: index == root.selectedIndex ? "#282C34" : "#18191E";
+                    color: index == root.selectedIndex ? Style.bgDarker : Style.bgDark;
 
                     UiLabel {
                         id: label;
-                        //font.pixelSize: 12;
 
                         anchors.centerIn: parent;
                         anchors.verticalCenterOffset: panel.radius/2;
@@ -87,7 +90,7 @@ Item {
             anchors.top: parent.top;
 
             height: 1;
-            color: "#181A1F"
+            color: Style.bgDarker
         }
     }
 

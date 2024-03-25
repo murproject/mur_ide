@@ -2,14 +2,14 @@ import QtQuick 2.6
 
 Rectangle {
     height: 24;
-    color: "#21252B"
+    color: Style.bgDark
 
     Rectangle {
         anchors.left: parent.left;
         anchors.right: parent.right;
         anchors.top: parent.top;
         height: 1;
-        color: "#181A1F"
+        color: Style.bgDarker;
     }
 
     Row {
@@ -29,8 +29,9 @@ Rectangle {
 
         UiLabel {
             anchors.verticalCenter: parent.verticalCenter;
-
             text: Controllers.editor.fileUrl.length > 0 ? Controllers.editor.fileUrl : "Empty"
+            width: root.width * 0.7;
+            elide: Text.ElideLeft;
             font.pointSize: 10;
         }
     }
@@ -44,22 +45,9 @@ Rectangle {
         anchors.rightMargin: 4;
         spacing: 4;
 
-        /*
-        Icon {
-            anchors.verticalCenter: parent.verticalCenter;
-            icon: Controllers.network.battery >= 70 ? icons.fa_battery_full : Controllers.network.battery >= 50 ? icons.fa_battery_half : Controllers.network.battery >= 20 ? icons.fa_battery_quarter : icons.fa_battery_empty;
-            color: Controllers.network.connected ? Controllers.network.battery < 20 ? "#E74C3C" : "#148F77" : "#626567";
-        }
-
-        Icon {
-            anchors.verticalCenter: parent.verticalCenter;
-            icon: icons.fa_circle;
-            color: Controllers.network.connected ? "#148F77" : "#E74C3C";
-        }
-        */
         UiLabel {
             anchors.verticalCenter: parent.verticalCenter;
-            text: "version: " + "0.0.8";
+            text: "Version: " + Controllers.version;
         }
     }
 }

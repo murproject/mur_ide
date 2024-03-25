@@ -9,7 +9,7 @@ Rectangle {
     property alias label: label;
 
     color: "#008800";
-    border.color: "#181A1F"
+    border.color: Style.bgDarker
 
     radius: 2;
 

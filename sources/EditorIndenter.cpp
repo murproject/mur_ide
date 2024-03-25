@@ -46,7 +46,7 @@ static std::tuple<QVector<QPair<int, int>>, QPair<int, int>, bool, int> parseTex
     int lastColonLine = -1;
     bool shouldHang = false;
 
-    auto lines = text.split(QRegExp("[\r\n]"), QString::KeepEmptyParts);
+    auto lines = text.split(QRegularExpression("[\r\n]"), Qt::KeepEmptyParts);
 
     for (auto line = 0; line < lines.size(); ++line) {
         auto currentLine = lines.at(line);
@@ -269,4 +269,4 @@ void EditorIndenter::computeIndent()
     QTextCursor cursor(m_textDocument->findBlockByLineNumber(line));
 }
 
-} // namespace Ide::Ui
+}

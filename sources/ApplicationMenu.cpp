@@ -11,6 +11,7 @@
 
 #include <QDesktopServices>
 #include <QMenuBar>
+#include <QApplication>
 
 namespace Ide::Ui {
 
@@ -73,7 +74,7 @@ void ApplicationMenu::onCodeRun()
         LocalScriptsController::instance->run();
     } else if (NetworkController::instance->getConnectionStatus()) {
         NetworkController::instance->run();
-        ApplicationLogger::instance->addEntry("Program started.");
+        ApplicationLogger::instance->addEntry("<br>- Program started.<br>");
     }
 }
 
@@ -81,7 +82,7 @@ void ApplicationMenu::onCodeStop()
 {
     if (LocalScriptsController::instance->isLocal()) {
         LocalScriptsController::instance->stop();
-        ApplicationLogger::instance->addEntry("Program stopped.");
+        ApplicationLogger::instance->addEntry("- Program stopped.");
     } else if (NetworkController::instance->getConnectionStatus()) {
         NetworkController::instance->stop();
     }
@@ -94,13 +95,6 @@ void ApplicationMenu::onRunSimulator()
 
 void ApplicationMenu::onRunRemote()
 {
-    /*
-    if (!image_porvider_controller::instance->is_reading_images()) {
-        image_porvider_controller::instance->start_image_capture();
-    } else {
-        image_porvider_controller::instance->stop_image_capture();
-    } */
-
     if (LocalScriptsController::instance->isLocal()) {
         return;
     }
@@ -143,34 +137,18 @@ void ApplicationMenu::onViewToggleEditor()
     EditorController::instance->toggleExpanded();
 }
 
-void ApplicationMenu::onHelpAbout()
-{
-    //
-}
-
-void ApplicationMenu::onHelpDocumentation()
-{
-    //
-}
-
-void ApplicationMenu::onHelpPreferences()
-{
-    //
-}
-
-void ApplicationMenu::onHelpVisitOnGitHub()
-{
-    QDesktopServices::openUrl(QUrl("https://github.com/", QUrl::TolerantMode));
-}
-
-void ApplicationMenu::onHelpSendFeedback()
-{
-    QDesktopServices::openUrl(
-        QUrl("mailto:vlad@murproject.com?subject=IDE Feedback", QUrl::TolerantMode));
-}
-
 void ApplicationMenu::onHelpExample(const QString &exampleName)
 {
     EditorController::instance->openFile(Application::getResourcesDirectory() + "examples/" + exampleName);
+}
+
+void ApplicationMenu::onRestart() {
+    QProcess::startDetached(QApplication::applicationFilePath());
+
+    if (QSysInfo::kernelType() == "winnt") { 
+        qApp->quit();
+    } else {
+        std::exit(EXIT_SUCCESS);
+    }
 }
 }

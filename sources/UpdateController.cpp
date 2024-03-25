@@ -2,7 +2,6 @@
 
 #include <QApplication>
 #include <QMessageBox>
-#include <QNetworkConfigurationManager>
 #include <QtConcurrent>
 
 namespace Ide::Ui {
@@ -62,14 +61,17 @@ void UpdateController::setCheckForUpdate(bool flag)
 
 void UpdateController::onCheckForUpdates()
 {
-    QNetworkConfigurationManager manager;
+    QTcpSocket сonnectionSocket;
+    сonnectionSocket.connectToHost("google.com", 80);
+    сonnectionSocket.waitForConnected(4000);
 
-    if (!manager.isOnline()) {
+    if (!(сonnectionSocket.state() == QTcpSocket::ConnectedState)) {
         return;
     }
-
+    сonnectionSocket.close();
     QProcess process;
-    process.start("maintenancetool --checkupdates");
+    QStringList args("--checkupdates");
+    process.start("maintenancetool", args);
 
     process.waitForFinished();
 
@@ -84,17 +86,25 @@ void UpdateController::onCheckForUpdates()
         return;
     }
 
+    if (data.contains("no updates available")) {
+        m_isUpdateAvailable = false;
+        return;
+    }
+
     m_isUpdateAvailable = true;
     emit updateAvailable();
 }
 
 void UpdateController::onUpdate()
 {
-    int ret = QMessageBox::question(nullptr,
-                                    tr("murIDE"),
-                                    tr("Update process require closing the IDE.\n"
-                                       "Do you want to proceed?"),
-                                    QMessageBox::Ok | QMessageBox::Cancel);
+    QMessageBox msgBox;
+
+    msgBox.setStyleSheet("background-color: #21252B; color: #6E7582;");
+    msgBox.setText("Update process require closing the IDE.\nDo you want to proceed?");
+    msgBox.addButton(QMessageBox::Ok);
+    msgBox.addButton(QMessageBox::Cancel);
+    int ret = msgBox.exec();
+
     if (ret == QMessageBox::Cancel) {
         return;
     }
@@ -116,9 +126,12 @@ void UpdateController::onCheckConnection()
 
     if (process.exitCode() == 0) {
         m_isConnected = true;
-        onCheckForUpdates();
+       onCheckForUpdates();
+        process.close();
         return;
     }
+
+    process.close();
 }
 
-} // namespace Ide::Ui
+} 

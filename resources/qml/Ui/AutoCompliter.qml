@@ -15,7 +15,6 @@ Rectangle {
         implicitWidth: contentItem.childrenRect.width;
         implicitHeight: contentHeight;
         boundsBehavior: Flickable.StopAtBounds;
-        //            text: modelData;
 
         model: Controllers.logger.entries;
         delegate: Rectangle {

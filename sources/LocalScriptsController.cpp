@@ -56,7 +56,7 @@ void LocalScriptsController::stop()
     if (m_scriptProcess->state() == QProcess::NotRunning) {
         return;
     }
-    m_scriptProcess->terminate();
+    m_scriptProcess->kill();
 }
 
 bool LocalScriptsController::isRunning()
@@ -107,9 +107,9 @@ void LocalScriptsController::setupProcess()
             &LocalScriptsController::runningStateChanged);
 
     connect(m_scriptProcess,
-            qOverload<int>(&QProcess::finished),
+            qOverload<int, QProcess::ExitStatus>(&QProcess::finished),
             this,
             &LocalScriptsController::runningStateChanged);
 }
 
-} // namespace ide::ui
+} 

@@ -1,13 +1,6 @@
 #include "EditorController.hxx"
-#include "EditorErrors.hxx"
-#include "EditorHighlighter.hxx"
-#include "EditorIndenter.hxx"
-#include "EditorHints.hxx"
-#include "EditorSearch.hxx"
-#include "EditorSelection.hxx"
 #include "EditorUtils.hxx"
 #include "TextIO.hxx"
-
 #include <QDebug>
 #include <QFile>
 #include <QTextDocument>
@@ -40,7 +33,7 @@ void EditorController::setDocument(QQuickTextDocument *document)
     m_document = document;
     auto textDocument = document->textDocument();
     auto options = textDocument->defaultTextOption();
-    options.setTabStop(20);
+    options.setTabStopDistance(20);
     textDocument->setDefaultTextOption(options);
     m_highlighter = new EditorHighlighter(textDocument);
 
@@ -274,4 +267,4 @@ EditorController::~EditorController()
     delete m_highlighter;
     m_highlighter = nullptr;
 }
-} // namespace ide::ui
+} 

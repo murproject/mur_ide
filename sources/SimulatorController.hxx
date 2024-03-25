@@ -33,4 +33,4 @@ private:
     QProcess *m_simulator_process = nullptr;
 };
 
-} // namespace ide::ui
+} 

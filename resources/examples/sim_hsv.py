@@ -5,7 +5,7 @@
 
 # Функции get_image_front и get_image_bottom работают только в симуляторе. 
 # Для получения видео на аппарате используйте cv2.VideoCapture из OpenCV!
-# (https://docs.opencv.org/4.1.1/dd/d43/tutorial_py_video_display.html)
+# (https://docs.opencv.org/4.7.0/dd/d43/tutorial_py_video_display.html)
 
 
 import pymurapi as mur

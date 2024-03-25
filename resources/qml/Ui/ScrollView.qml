@@ -1,6 +1,5 @@
 import QtQuick 2.2
 import QtQuick.Controls 1.4
-import QtQuick.Controls.Styles 1.4
 
 ScrollView {
 
@@ -12,7 +11,7 @@ ScrollView {
             Rectangle {
                 width: 7;
                 height: control.viewport.height * control.viewport.height / control.contentItem.height - 4;
-                color: "#21252B";
+                color: Style.bgDark;
                 radius: 4;
             }
         }

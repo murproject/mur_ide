@@ -18,7 +18,7 @@ const QString selectSavFileUrl(const QString &title)
 const QString selectOpenFileUrl(const QString &filter, const QString &title) {
   return QFileDialog::getOpenFileName(nullptr, title, nullptr, filter);
 }
-} // namespace from_dialog
+} 
 
 namespace Read {
 
@@ -45,7 +45,7 @@ QString textFromUrl(const QString &url)
 
     return text;
 }
-} // namespace read
+} 
 
 namespace Write {
 
@@ -55,7 +55,7 @@ bool textToFile(const QString &text, const QString &url)
 
     if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
         QTextStream stream(&file);
-        stream.setCodec("UTF-8");
+        stream.setEncoding(QStringConverter::Utf8);
         stream.setGenerateByteOrderMark(false);
         stream << text.toUtf8();
         file.close();
@@ -63,7 +63,7 @@ bool textToFile(const QString &text, const QString &url)
     }
     return false;
 }
-} // namespace write
+} 
 
 QStringList fileNamesFromDir(const QString &dir, QStringList filters, FileSuffix option)
 {
@@ -131,4 +131,4 @@ bool directoryExists(const QString &url)
     return dir.exists() && dir.isDir();
 }
 
-} // namespace ide::io
+} 

@@ -10,7 +10,7 @@ Item {
 
     property int minRight: 50;
     property int minLeft: 50;
-    property color handleBorder: ma.containsMouse || ma.pressed ? "#3C424F" : leftContainer.minimized || rightContainer.minimized ? "#282C34" : "#21252B";
+    property color handleBorder: ma.containsMouse || ma.pressed ? Style.darkerGray : leftContainer.minimized || rightContainer.minimized ? Style.bgBlue : Style.bgDarker;
 
     function setSplitLocation(val) {
         anchor.x = val;
@@ -134,8 +134,9 @@ Item {
         height: leftIcon.height * 2;
         radius: 3;
 
-        color: "#181A1F";
+        color: Style.bgDarker;
         border.color: root.handleBorder;
+        opacity: ma.containsMouse ? 1.0 : 0.75;
 
         Icon {
             id: leftIcon;
@@ -170,8 +171,9 @@ Item {
         height: rightIcon.height * 2;
         radius: 3;
 
-        color: "#181A1F";
+        color: Style.bgDarker;
         border.color: root.handleBorder;
+        opacity: ma.containsMouse ? 1.0 : 0.75;
 
         Icon {
             id: rightIcon;
@@ -213,5 +215,12 @@ Item {
 
         onPressed: root.unlockAnchor();
         onReleased: root.lockAnchor();
+    }
+
+    Behavior on handleBorder {
+        ColorAnimation {
+            duration: Style.animFastest;
+            easing.type: Style.animEasing;
+        }
     }
 }

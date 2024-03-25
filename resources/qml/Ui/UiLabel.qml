@@ -1,11 +1,11 @@
 import QtQuick 2.2
 
-Text {
-    color: enabled ? "#9DA5B4" : "#6E7582"
 
-    font.family: "Segoe WPC";
+Text {
+    color: enabled ? Style.lightGray : Style.gray;
+
+    font.family: Style.fontSans;
     font.pointSize: 10;
-    //renderType: TextEdit.NativeRendering;
 
     elide: Text.ElideRight;
     textFormat: Text.PlainText;

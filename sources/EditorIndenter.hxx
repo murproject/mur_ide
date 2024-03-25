@@ -55,4 +55,4 @@ private:
     QTextDocument *m_textDocument = nullptr;
 };
 
-} // namespace ide::ui
+} 

@@ -25,33 +25,27 @@ void EditorHighlighter::init() {
   for (auto i = 0; i < ruleObjects.count(); ++i) {
     ruleObject = ruleObjects.at(i).toObject();
 
-    if (ruleObject[Key::bold].toBool(false)) {
-      format.setFontWeight(QFont::Bold);
-    } else {
-      format.setFontWeight(QFont::Normal);
-    }
+    format.setFontWeight(QFont::Normal);
 
     format.setFontItalic(ruleObject[Key::italic].toBool(false));
 
     format.setForeground(QColor(ruleObject[Key::color].toString("#ffffff")));
 
-    rule.pattern = QRegExp(ruleObject[Key::match].toString());
+    rule.pattern = QRegularExpression(ruleObject[Key::match].toString());
     rule.format = format;
 
     m_rules.append(rule);
   }
 }
 
-void EditorHighlighter::highlightBlock(const QString &text) {
-  for (const auto &rule : this->m_rules) {
-    auto expression = QRegExp(rule.pattern);
-    auto index = expression.indexIn(text);
 
-    while (index >= 0) {
-      auto length = expression.matchedLength();
-      setFormat(index, length, rule.format);
-      index = expression.indexIn(text, index + length);
+void EditorHighlighter::highlightBlock(const QString &text) {
+    for (const auto &rule : qAsConst(this->m_rules)) {
+        QRegularExpressionMatchIterator matchIterator = rule.pattern.globalMatch(text);
+        while (matchIterator.hasNext()) {
+            QRegularExpressionMatch match = matchIterator.next();
+            setFormat(match.capturedStart(), match.capturedLength(), rule.format);
+        }
     }
-  }
 }
 }
