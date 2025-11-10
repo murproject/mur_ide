@@ -4,6 +4,7 @@ import QtQuick.Controls 2.12
 import QtQuick.Layouts 1.12
 
 import mur.GamepadAxes 1.0
+import input.KeyboardAxes 1.0
 
 ColumnLayout {
     id: gamepadWidget;
@@ -12,6 +13,20 @@ ColumnLayout {
     property bool showIndicator: true;
     property bool showValues: true;
     property bool opaqueWhenConnected: true;
+    property bool isKeyboard: false;
+
+
+    function calculateOffset(index1, index2) {
+        var value1 = Controllers.joystick.allAxes[index1];
+        var value2 = Controllers.joystick.allAxes[index2];
+        return (value1 > value2) ? -value1 : value2;
+    }
+
+    function calculateOffsetKeyboard(index1, index2){
+        var value1 = Controllers.keyboard.allAxes[index1] * 100;
+        var value2 = Controllers.keyboard.allAxes[index2] * 100;
+        return (Math.abs(value1) > Math.abs(value2)) ? value1 : value2;
+    }
 
     RowLayout {
         Layout.alignment: Qt.AlignHCenter;
@@ -67,9 +82,11 @@ ColumnLayout {
 
             Rectangle {
                 anchors.verticalCenter: parent.verticalCenter;
-                anchors.verticalCenterOffset: Controllers.joystick.allAxes[GamepadAxes.AxisY] / parent.divider;
+                anchors.verticalCenterOffset: (isKeyboard ? calculateOffsetKeyboard(KeyboardAxes.AxisYm, KeyboardAxes.AxisYp) :
+                                                            calculateOffset(GamepadAxes.AxisYm, GamepadAxes.AxisYp)) / parent.divider;
                 anchors.horizontalCenter: parent.horizontalCenter;
-                anchors.horizontalCenterOffset: Controllers.joystick.allAxes[GamepadAxes.AxisX] / parent.divider;
+                anchors.horizontalCenterOffset: (isKeyboard ? calculateOffsetKeyboard(KeyboardAxes.AxisXm, KeyboardAxes.AxisXp) :
+                                                              calculateOffset(GamepadAxes.AxisXm, GamepadAxes.AxisXp)) / parent.divider;
                 color: "white";
                 radius: 999;
                 height: parent.height / 7;
@@ -107,9 +124,11 @@ ColumnLayout {
             Rectangle {
                 property int axis: 0;
                 anchors.verticalCenter: parent.verticalCenter;
-                anchors.verticalCenterOffset: Controllers.joystick.allAxes[GamepadAxes.AxisZ] / parent.divider ;
+                anchors.verticalCenterOffset: (isKeyboard ? calculateOffsetKeyboard(KeyboardAxes.AxisZm, KeyboardAxes.AxisZp)
+                                                          : calculateOffset(GamepadAxes.AxisZm, GamepadAxes.AxisZp)) / parent.divider;
                 anchors.horizontalCenter: parent.horizontalCenter;
-                anchors.horizontalCenterOffset: Controllers.joystick.allAxes[GamepadAxes.AxisW] / parent.divider;
+                anchors.horizontalCenterOffset: (isKeyboard ? calculateOffsetKeyboard(KeyboardAxes.AxisWm, KeyboardAxes.AxisWp)
+                                                          : calculateOffset(GamepadAxes.AxisWm, GamepadAxes.AxisWp)) / parent.divider;
                 color: "white";
                 radius: 999;
                 height: parent.height / 7;
@@ -124,16 +143,16 @@ ColumnLayout {
 
         Repeater {
             model: [
-                Controllers.joystick.allAxes[GamepadAxes.AxisX],
-                Controllers.joystick.allAxes[GamepadAxes.AxisY],
-                Controllers.joystick.allAxes[GamepadAxes.AxisZ],
-                Controllers.joystick.allAxes[GamepadAxes.AxisW],
+                ["AxisX",       GamepadAxes.AxisXm,        GamepadAxes.AxisXp],
+                ["AxisY",       GamepadAxes.AxisYm,        GamepadAxes.AxisYp],
+                ["AxisZ",       GamepadAxes.AxisZm,        GamepadAxes.AxisZp],
+                ["AxisW",       GamepadAxes.AxisWm,        GamepadAxes.AxisWp],
             ]
 
             UiLabel {
                 width: 50;
                 horizontalAlignment: Text.AlignHCenter;
-                text: modelData;
+                text: calculateOffset(modelData[1], modelData[2]);
                 font.family: Style.fontMono;
             }
         }

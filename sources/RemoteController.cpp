@@ -1,18 +1,24 @@
 #include "RemoteController.hxx"
 #include "Joystick.hxx"
+#include "Keyboard.hxx"
 #include "NetworkController.hxx"
 #include "TextIO.hxx"
 
 #include <algorithm>
+#include <chrono>
+#include <thread>
+#include <shared_mutex>
+
 #include <opencv2/opencv.hpp>
 #include <opencv2/videoio/videoio_c.h>
-#include <shared_mutex>
+
 #include <QDateTime>
 #include <QDebug>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QPixmap>
 #include <QStandardPaths>
+#include <qapplication.h>
 
 namespace Ide::Ui {
 RemoteController *RemoteController::instance = nullptr;
@@ -57,6 +63,10 @@ RemoteController::RemoteController()
     m_transmitThrustTimer = new QTimer{};
 
     connect(m_transmitThrustTimer, &QTimer::timeout, this, &RemoteController::updateRemoteThrust);
+
+    connect(QApplication::instance(), &QApplication::aboutToQuit, this, [this]() {
+        this->setRecordingVideo(false);
+    });
 }
 
 RemoteController *RemoteController::Create()
@@ -263,9 +273,7 @@ void RemoteController::updateImages(cv::VideoCapture *cap, cv::VideoWriter *rec,
     lock.unlock();
     lock.release();
 
-    while (m_threadFlag) {
-        if (cap->read(frame)) {
-            if (!frame.empty()) {
+    auto processFrame = [&](){
                 if (m_watermarkOn) {
                     QString textFormat = m_watermark;
                     textFormat.replace("%device%",  NetworkController::instance->getVehicleFancyName(false));
@@ -284,13 +292,19 @@ void RemoteController::updateImages(cv::VideoCapture *cap, cv::VideoWriter *rec,
                     cv::putText(frame, text, watermarkPos, cv::FONT_HERSHEY_SIMPLEX, watermarkScale, cv::Scalar::all(255), 1, cv::LINE_AA);
                 }
 
-                QImage img = QImage((uchar *)frame.data,frame.cols, frame.rows, QImage::Format_RGB888).rgbSwapped();
+        QImage img = QImage(static_cast<uchar*>(frame.data), frame.cols, frame.rows, QImage::Format_RGB888).rgbSwapped();
                 setImage(*targetImg, img);
 
                 if (m_isRecordingVideo) {
                     rec->write(frame);
                 }
-            }
+    };
+
+    while (m_threadFlag) {
+        if (cap->read(frame) && !frame.empty()) {
+            processFrame();
+        } else {
+            std::this_thread::sleep_for(std::chrono::milliseconds(1000/60));
         }
     }
 
@@ -513,6 +527,7 @@ void RemoteController::saveSpeedLimits() {
     settings.setValue("speed_low", m_speedLimits[static_cast<int>(SpeedModes::Low)]);
     settings.setValue("speed_mid", m_speedLimits[static_cast<int>(SpeedModes::Mid)]);
     settings.setValue("speed_max", m_speedLimits[static_cast<int>(SpeedModes::Max)]);
+
     settings.endGroup();
 }
 
@@ -525,18 +540,41 @@ int RemoteController::axis_treshold(int value) {
     return value;
 }
 
+int RemoteController::keyboard_threshold(int value){
+    auto keyboard = Keyboard::instance;
+    int speed = static_cast<int>(SpeedModes::Mid);
+
+    if (keyboard->getAxisValue(KeyboardAxes::SpeedSlow)) speed = static_cast<int>(SpeedModes::Low);
+    if (keyboard->getAxisValue(KeyboardAxes::SpeedFast)) speed = static_cast<int>(SpeedModes::Max);
+
+    return value * m_speedLimits[speed];
+}
+
 void RemoteController::updateRemoteThrust()
 {
+    int x = 0;
+    int y = 0;
+    int z = 0;
+    int w = 0;
+
     auto gamepad = Joystick::instance;
 
-    auto x = axis_treshold(gamepad->getAxisValue(JoystickAxes::AxisY));
-    auto y = axis_treshold(gamepad->getAxisValue(JoystickAxes::AxisX));
-    auto z = axis_treshold(gamepad->getAxisValue(JoystickAxes::AxisZ));
-    auto w = axis_treshold(gamepad->getAxisValue(JoystickAxes::AxisW));
+    if (!gamepad->getKeyboardMode()){
+        x = axis_treshold(gamepad->getAxesValue(JoystickAxes::AxisXm, JoystickAxes::AxisXp));
+        y = axis_treshold(gamepad->getAxesValue(JoystickAxes::AxisYm, JoystickAxes::AxisYp));
+        z = axis_treshold(gamepad->getAxesValue(JoystickAxes::AxisZm, JoystickAxes::AxisZp));
+        w = axis_treshold(gamepad->getAxesValue(JoystickAxes::AxisWm, JoystickAxes::AxisWp));
+    } else {
+        auto keyboard = Keyboard::instance;
+        x = keyboard_threshold(keyboard->getAxesValue(KeyboardAxes::AxisXm, KeyboardAxes::AxisXp));
+        y = keyboard_threshold(keyboard->getAxesValue(KeyboardAxes::AxisYm, KeyboardAxes::AxisYp));
+        z = keyboard_threshold(keyboard->getAxesValue(KeyboardAxes::AxisZm, KeyboardAxes::AxisZp));
+        w = keyboard_threshold(keyboard->getAxesValue(KeyboardAxes::AxisWm, KeyboardAxes::AxisWp));
+    }
 
     if (!isAutoYaw() && !isAutoDepth() && !NetworkController::instance->isRov()) {
-        auto first_forward_motor = static_cast<int>(std::clamp(x + y, -100, 100));
-        auto second_forward_motor = static_cast<int>(std::clamp(x - y, -100, 100));
+        auto first_forward_motor = static_cast<int>(std::clamp(y + x, -100, 100));
+        auto second_forward_motor = static_cast<int>(std::clamp(y - x, -100, 100));
         auto first_upward_motor = static_cast<int>(std::clamp(z, -100, 100));
         auto second_upward_motor = static_cast<int>(std::clamp(z, -100, 100));
 
@@ -561,13 +599,13 @@ void RemoteController::updateRemoteThrust()
     } else {
         QJsonObject json;
 
-        QJsonArray array = {x, y, z, w};
+        QJsonArray array = {y, x, z, w};
 
         json["type"] = "remote_control";
 
         if (isAutoYawAltmode() && NetworkController::instance->isFeatureSupported("yaw_altmode")) {
-            if (x != 0) {
-                m_targetYaw += x * 0.1;
+            if (y != 0) {
+                m_targetYaw += y * 0.1;
                 if (m_targetYaw >  180) m_targetYaw -= 360;
                 if (m_targetYaw < -180) m_targetYaw += 360;
                 emit targetYawChanged();
@@ -611,4 +649,4 @@ void RemoteController::setSpeedLimit(int mode, int value) {
     emit speedModeChanged();
 }
 
-} 
+}

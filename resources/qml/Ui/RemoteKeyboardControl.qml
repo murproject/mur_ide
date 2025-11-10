@@ -2,7 +2,7 @@ import QtQuick 2.12
 import mur 1.0
 import QtQuick.Layouts 1.12
 
-import mur.GamepadAxes 1.0
+import input.KeyboardAxes 1.0
 
 Rectangle {
     property color activeColor: keyboardControl.activeFocus ? Style.greenDark : Style.bgDark;
@@ -32,61 +32,57 @@ Rectangle {
         id: keyboardControl;
         focus: true;
 
-        property var bindings: {
-            "w": [GamepadAxes.AxisY, -1],
-            "s": [GamepadAxes.AxisY, +1],
-            "a": [GamepadAxes.AxisX, -1],
-            "d": [GamepadAxes.AxisX, +1],
-            "q": [GamepadAxes.AxisZ, -1],
-            "e": [GamepadAxes.AxisZ, +1],
-            "z": [GamepadAxes.AxisW, -1],
-            "x": [GamepadAxes.AxisW, +1],
-        };
+        property var axisBindings: [];
 
-        Component.onCompleted: function() {
-            var keys = {
-                "w": "ц",
-                "a": "ф",
-                "s": "ы",
-                "d": "в",
-                "q": "й",
-                "e": "у",
-                "z": "я",
-                "x": "ч",
-            };
-
-            for (var key in keys) {
-                bindings[keys[key]] = bindings[key];
+        Connections {
+            target: Controllers.joystick
+            function onKeyboardModeChanged() {
+                if (Controllers.joystick.getKeyboardMode()) {
+                    keyboardControl.forceActiveFocus();
+                } else {
+                    keyboardControl.focus = false;
+                }
             }
         }
 
-        Keys.onPressed: {
-            if (event.modifiers & Qt.CtrlModifier) {
-                Controllers.joystick.setForceAxisValue(GamepadAxes.SpeedFast, 100);
-            }
+        function updateBindings() {
+            axisBindings = [
+                { key: Controllers.keyboard.getAxisBinding(KeyboardAxes.AxisXm),    value: -1 },
+                { key: Controllers.keyboard.getAxisBinding(KeyboardAxes.AxisXp),    value:  1 },
+                { key: Controllers.keyboard.getAxisBinding(KeyboardAxes.AxisYm),    value: -1 },
+                { key: Controllers.keyboard.getAxisBinding(KeyboardAxes.AxisYp),    value:  1 },
+                { key: Controllers.keyboard.getAxisBinding(KeyboardAxes.AxisZm),    value: -1 },
+                { key: Controllers.keyboard.getAxisBinding(KeyboardAxes.AxisZp),    value:  1 },
+                { key: Controllers.keyboard.getAxisBinding(KeyboardAxes.AxisWm),    value: -1 },
+                { key: Controllers.keyboard.getAxisBinding(KeyboardAxes.AxisWp),    value:  1 },
+                { key: Controllers.keyboard.getAxisBinding(KeyboardAxes.SpeedFast), value:  1 },
+                { key: Controllers.keyboard.getAxisBinding(KeyboardAxes.SpeedSlow), value:  1 }
+            ];
+        }
 
-            if (event.modifiers & Qt.ShiftModifier) {
-                Controllers.joystick.setForceAxisValue(GamepadAxes.SpeedSlow, 100);
-            }
+        Component.onCompleted: {
+            Controllers.keyboard.rebinded.connect(updateBindings);
+            updateBindings();
+        }
 
-            let action = bindings[event.text];
+        Keys.onPressed: function(event) {
+            let key = event.nativeScanCode;
 
-            if (action !== undefined) {
-                let power = action[1] * 40;
-                Controllers.joystick.addForceAxisValue(action[0], power);
+            for (let binding of axisBindings) {
+                if (key === binding.key) {
+                    Controllers.keyboard.setAxisValue(binding.key, binding.value);
+                }
             }
         }
 
-        Keys.onReleased: {
-            let action = bindings[event.text];
+        Keys.onReleased: function(event) {
+            let key = event.nativeScanCode;
 
-            if (!event.modifiers && !event.isAutoRepeat) {
-                Controllers.joystick.setForceAxisValue(GamepadAxes.SpeedFast, 0);
-                Controllers.joystick.setForceAxisValue(GamepadAxes.SpeedSlow, 0);
-            }
-
-            if (action !== undefined && !event.isAutoRepeat) {
-                Controllers.joystick.setForceAxisValue(action[0], 0);
+            for (let i = 0; i < axisBindings.length; i++) {
+                let binding = axisBindings[i];
+                if (key === binding.key) {
+                    Controllers.keyboard.setAxisValue(binding.key, 0);
+                }
             }
         }
     }
@@ -134,6 +130,7 @@ Rectangle {
         showIndicator: false;
         showValues: false;
         opaqueWhenConnected: false;
+        isKeyboard: true;
 
         Behavior on opacity {
             NumberAnimation {
@@ -162,6 +159,7 @@ Rectangle {
             } else {
                 keyboardControl.focus = false;
             }
+            Controllers.joystick.setKeyboardMode(keyboardControl.focus);
         }
     }
 }

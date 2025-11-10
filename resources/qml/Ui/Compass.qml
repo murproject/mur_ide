@@ -5,7 +5,7 @@ import mur 1.0
 
 Rectangle {
     id: compass;
-    property real targetYaw: Controllers.image.targetYaw + 180;
+    property real targetYaw: Controllers.remote.targetYaw + 180;
     property real rawYaw: Controllers.network.yaw + 180;
     property real yaw: -(rawYaw - 180) + 90 - (360 / 1.5);
 
@@ -115,7 +115,7 @@ Rectangle {
             x: (((compass.yaw + 450 + compass.targetYaw) * (meter.w / 360)) % meter.w) - (width / 2);
             anchors.top: meter.top;
             anchors.topMargin: -7;
-            visible: Controllers.image.autoYawAltmode;
+            visible: Controllers.remote.autoYawAltmode;
             icon: icons.fa_caret_down;
             font.pointSize: 16;
             color: "#BBAAFFAA";
@@ -130,7 +130,7 @@ Rectangle {
         anchors.horizontalCenter: compass.horizontalCenter;
         icon: icons.fa_caret_up;
         font.pointSize: 16;
-        color: Controllers.image.speedMode === 0 ? Style.gray : Controllers.image.speedMode === 2 ? Style.yellow : Style.white;
+        color: Controllers.remote.speedMode === 0 ? Style.gray : Controllers.remote.speedMode === 2 ? Style.yellow : Style.white;
         style: Text.Outline;
         styleColor: Style.outlineColor;
     }

@@ -158,11 +158,11 @@ Rectangle {
                                 label.text: modelData;
 
                                 onClicked: {
-                                    Controllers.image.sendRovControl(fcuIndex + 1, modelData, probingPower.value);
+                                    Controllers.remote.sendRovControl(fcuIndex + 1, modelData, probingPower.value);
                                 }
 
                                 onPressing: {
-                                    Controllers.image.sendRovControl(fcuIndex + 1, modelData, probingPower.value);
+                                    Controllers.remote.sendRovControl(fcuIndex + 1, modelData, probingPower.value);
                                 }
                             }
                         }

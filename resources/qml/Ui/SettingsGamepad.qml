@@ -14,6 +14,58 @@ Item {
         Controllers.joystick.saveSettings();
     }
 
+    function clearAllAxes() {
+        for (var i = 0; i < GamepadAxes.AxisCount; i++) {
+            Controllers.joystick.clearAxis(i);
+        }
+    }
+
+    function toDefaultSettings() {
+        Controllers.joystick.toDefaultSettings();
+        updateSliders();
+    }
+
+    function updateSliders(){
+        deadzoneSlider.value = Controllers.joystick.getDeadzone();
+        expFactorSlider.value = Controllers.joystick.getExpFactor();
+        buttonThresholdSlider.value = Controllers.joystick.getButtonThreshold();
+    }
+
+    function updatePresetNames() {
+        var currentName = presetComboBox.editText;
+        model.clear();
+        var presetNames = Controllers.joystick.getPresetNames();
+        for (var i = 0; i < presetNames.length; i++) {
+            model.append({ text: presetNames[i] });
+        }
+        presetComboBox.editText = currentName;
+    }
+
+    function savePreset() {
+        if (presetComboBox.editText !== ""){
+            Controllers.joystick.setLastPresetName(presetComboBox.editText);
+            Controllers.joystick.saveSettings();
+            updatePresetNames();
+        }
+    }
+
+    function loadPreset() {
+        if (presetComboBox.currentText !== ""){
+            Controllers.joystick.setLastPresetName(presetComboBox.currentText);
+            Controllers.joystick.loadSettings();
+            updateSliders();
+            calibrationCheckBox.checked = Controllers.joystick.getCalibration();
+        }
+    }
+
+    function deletePreset(){
+        if (presetComboBox.currentText !== ""){
+            Controllers.joystick.deletePreset("Preset_" + presetComboBox.currentText);
+            updatePresetNames();
+            presetComboBox.editText = "";
+        }
+    }
+
     RowLayout {
         id: column;
         property int buttonWidth: 60;
@@ -32,119 +84,98 @@ Item {
                 font.pointSize: Style.headerFontSize;
             }
 
-            Repeater {
-                model: [
-                    GamepadAxes.AxisX,
-                    GamepadAxes.AxisY,
-                    GamepadAxes.AxisZ,
-                    GamepadAxes.AxisW,
-                ];
+            AxesRepeater{}
 
-                RowLayout {
-                    visible: modelData != GamepadAxes.AxisW;
+            RowLayout {
+                Layout.alignment: Qt.AlignRight;
+                spacing: 32;
 
-                    UiLabel {
-                        Layout.fillWidth: true;
-                        text: Controllers.joystick.getMovementAxisName(modelData) + ":";
-                    }
+                UiCheckbox{
+                    id: showNumbers;
+                    label.text: "Show as numbers";
+                    checked: true;
+                }
 
-                    UiButton {
-                        width: column.buttonWidth;
-                        label.font.bold: true;
-                        outline: true;
-                        label.opacity: label.text == "···" ? 0.25 : 1.0;
-                        label.text: Controllers.joystick.allAxesBindings[modelData];
-                        highlight: Controllers.joystick.rebindingAxis === modelData || Math.abs(Controllers.joystick.allAxes[modelData]) > 50;
-                        onClicked: {
-                             Controllers.joystick.requestRebind(modelData);
-                        }
-                    }
-
-                    UiButton {
-                        highlight: Controllers.joystick.allAxesInversions[modelData];
-                        icon: icons.fa_exchange;
-                        toolTip: "Inverse";
-                        onClicked: {
-                            Controllers.joystick.setAxisInversion(modelData, !highlight);
-                        }
-                    }
-
-                    UiButton {
-                        icon: icons.fa_times;
-                        toolTip: "Clear";
-                        onClicked: {
-                            Controllers.joystick.clearAxis(modelData);
-                        }
+                UiButton {
+                    label.text: "Clear all";
+                    width: 79;
+                    onClicked: {
+                        clearAllAxes();
                     }
                 }
             }
-            Repeater {
-                model: [
-                    ["Speed",       GamepadAxes.SpeedSlow,        GamepadAxes.SpeedFast],
-                ];
 
-                RowLayout {
-                   visible: index == 0 || showAll.checked;
+            RowLayout {
+                Layout.alignment: Qt.AlignRight;
+                spacing: 38;
 
-                    UiLabel {
-                        Layout.fillWidth: true;
-                        text: modelData[0] + ":\t";
+                UiCheckbox{
+                    id: calibrationCheckBox;
+                    label.text: "Apply calibration";
+                    checked: Controllers.joystick.getCalibration();
+
+                    onCheckedChanged: {
+                        Controllers.joystick.setCalibration(calibrationCheckBox.checked);
                     }
 
-                    UiButton {
-                        label.font.bold: true;
-                        outline: true;
-                        label.opacity: label.text == "···" ? 0.25 : 1.0;
-                        width: column.buttonWidth;
-                        label.text: Controllers.joystick.allAxesBindings[modelData[1]];
-                        highlight: Controllers.joystick.rebindingAxis === modelData[1] || Controllers.joystick.allAxes[modelData[1]] > 50;
-                        onClicked: {
-                             Controllers.joystick.requestRebind(modelData[1]);
+                    onClicked: {}
+                }
+
+                UiButton {
+                    label.text: "Default";
+                    width: 79;
+                    onClicked: {
+                        toDefaultSettings();
+                    }
+                }
+            }
+
+            UiLabel {
+                text: "Presets:";
+                font.pointSize: Style.headerFontSize;
+            }
+
+            RowLayout{
+                ComboBox {
+                    id: presetComboBox;
+                    editable: true;
+                    Layout.fillWidth: true;
+                    Layout.alignment: Qt.AlignVCenter;
+                    model: ListModel {
+                        id: model
+                        Component.onCompleted: {
+                            updatePresetNames();
                         }
                     }
 
-                    UiButton {
-                        frameless: true;
-                        enabled: false;
-                        width: 25;
-                        icon: Controllers.joystick.allAxes[modelData[2]] > 50 ? icons.fa_chevron_up   :
-                              Controllers.joystick.allAxes[modelData[1]] > 50 ? icons.fa_chevron_down :
-                                                                               "·";
+                    onActivated: {
+                        loadPreset();
                     }
 
-
-                    UiButton {
-                        label.font.bold: true;
-                        outline: true;
-                        label.opacity: label.text == "···" ? 0.25 : 1.0;
-                        width: column.buttonWidth;
-                        label.text: Controllers.joystick.allAxesBindings[modelData[2]];
-                        highlight: Controllers.joystick.rebindingAxis === modelData[2] || Controllers.joystick.allAxes[modelData[2]] > 50;
-                        onClicked: {
-                             Controllers.joystick.requestRebind(modelData[2]);
-                        }
+                    Component.onCompleted:{
+                        presetComboBox.editText = Controllers.joystick.getLastPresetName();
                     }
+                }
 
-                    UiButton {
-                        highlight: Controllers.joystick.allAxesInversions[modelData[1]];
-                        icon: icons.fa_exchange;
-                        toolTip: "Inverse";
-                        onClicked: {
-                            Controllers.joystick.swapAxes(modelData[1], modelData[2]);
-                        }
+
+                UiButton {
+                    label.text: "Save";
+                    width: 60;
+                    onClicked: {
+                        savePreset();
                     }
+                }
 
-                    UiButton {
-                        icon: icons.fa_times;
-                        toolTip: "Clear";
-                        onClicked: {
-                            Controllers.joystick.clearAxis(modelData[1]);
-                            Controllers.joystick.clearAxis(modelData[2]);
-                        }
+                UiButton {
+                    label.text: "Delete";
+                    width: 60;
+                    onClicked: {
+                        deletePreset();
                     }
                 }
             }
         }
+
 
         ColumnLayout {
             Layout.alignment: Qt.AlignCenter;
@@ -164,6 +195,7 @@ Item {
                 }
 
                 Slider {
+                    id: deadzoneSlider
                     Layout.alignment: Qt.AlignVCenter;
                     Layout.fillWidth: true;
                     from: 0;
@@ -193,6 +225,7 @@ Item {
                 }
 
                 Slider {
+                    id: expFactorSlider;
                     Layout.alignment: Qt.AlignVCenter;
                     Layout.fillWidth: true;
                     from: 1.0;
@@ -212,6 +245,37 @@ Item {
                     text: Controllers.joystick.expFactor.toFixed(1);
                     horizontalAlignment: Text.AlignRight;
                     Layout.minimumWidth: 22;
+                }
+            }
+
+            RowLayout {
+                Layout.alignment: Qt.AlignHCenter;
+                spacing: 4;
+
+                UiLabel {
+                    text: "Threshold:"
+                }
+
+                Slider {
+                    id: buttonThresholdSlider;
+                    Layout.alignment: Qt.AlignVCenter;
+                    Layout.fillWidth: true;
+                    from: 5;
+                    to: 100;
+                    value: Controllers.joystick.getButtonThreshold();
+                    snapMode: Slider.SnapAlways
+                    stepSize: 5;
+
+                    onValueChanged: {
+                        Controllers.joystick.setButtonThreshold(value);
+                    }
+                }
+
+                UiLabel {
+                    font.family: Style.fontMono;
+                    text: Controllers.joystick.buttonThreshold;
+                    horizontalAlignment: Text.AlignRight;
+                    Layout.minimumWidth: 25;
                 }
             }
         }

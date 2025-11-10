@@ -33,9 +33,10 @@ void ApplicationMenu::Create() {
 void ApplicationMenu::init()
 {
     m_examples = IO::fileNamesFromDir(Application::instance->getResourcesDirectory()
-                                             + "examples/",
+                                             + "/examples/",
                                          {"*.py"},
                                          IO::FileSuffix::On);
+    m_examples.sort();
 }
 
 QStringList ApplicationMenu::getExamples()
@@ -139,7 +140,7 @@ void ApplicationMenu::onViewToggleEditor()
 
 void ApplicationMenu::onHelpExample(const QString &exampleName)
 {
-    EditorController::instance->openFile(Application::getResourcesDirectory() + "examples/" + exampleName);
+    EditorController::instance->openFile(Application::getResourcesDirectory() + "/examples/" + exampleName);
 }
 
 void ApplicationMenu::onRestart() {

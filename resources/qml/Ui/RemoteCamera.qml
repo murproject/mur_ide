@@ -64,6 +64,7 @@ ColumnLayout {
             icon: cam.isFullscreen ? icons.fa_compress : icons.fa_expand;
             anchors.bottom: parent.bottom;
             anchors.right: parent.right;
+            setFocus: false;
             onClicked: {
                 cam.isFullscreen = !cam.isFullscreen;
                 fullWindow.visible = cam.isFullscreen;
@@ -80,7 +81,7 @@ ColumnLayout {
 
         Connections {
             target: cameraImage;
-            onImageChanged: function () {
+            function onImageChanged() {
                 haveImage = true;
             }
         }

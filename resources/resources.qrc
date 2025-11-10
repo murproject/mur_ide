@@ -53,5 +53,7 @@
         <file>qml/Ui/Altimeter.qml</file>
         <file>qml/Ui/BatterySettings.qml</file>
         <file>images/mur_ide_elements_new.jpg</file>
+        <file>qml/Ui/SettingsKeyboard.qml</file>
+        <file>qml/Ui/AxesRepeater.qml</file>
     </qresource>
 </RCC>

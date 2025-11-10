@@ -108,7 +108,7 @@ Rectangle {
         anchors.verticalCenter: altimeter.verticalCenter;
         icon: icons.fa_caret_right;
         font.pointSize: 16;
-        color: Controllers.image.speedMode === 0 ? Style.gray : Controllers.image.speedMode === 2 ? Style.yellow : Style.white;
+        color: Controllers.remote.speedMode === 0 ? Style.gray : Controllers.remote.speedMode === 2 ? Style.yellow : Style.white;
         style: Text.Outline;
         styleColor: Style.outlineColor;
     }

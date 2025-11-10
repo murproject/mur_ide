@@ -69,24 +69,9 @@ Ide::IO::Telemetry telemetry(const QString &json)
     double depth = object["depth"].toDouble();
     double pressure = object["pressure"].toDouble();
     double temperature = object["temperature"].toDouble();
-    double battery = object["battery"].toDouble();
-
-    int fg_cycle_count = object["fg_cycle_count"].toInt();
-    int fg_full_charge_capacity = object["fg_full_charge_capacity"].toInt();
-    int fg_max_error = object["fg_max_error"].toInt();
-    int fg_remaining_capacity = object["fg_remaining_capacity"].toInt();
-    int fg_reset_count = object["fg_reset_count"].toInt();
-    int fg_update_status = object["fg_update_status"].toInt();
-
-    double fg_temp = object["fg_temp"].toDouble();
     double amperage = object["amperage"].toDouble();
     double voltage = object["voltage"].toDouble();
-
-    bool fg_flag_fc = object["fg_flag_fc"].toBool();
-    bool fg_flag_qen = object["fg_flag_qen"].toBool();
-    bool fg_flag_rup_dis = object["fg_flag_rup_dis"].toBool();
-    bool fg_flag_vok_flag = object["fg_flag_vok_flag"].toBool();
-    bool fg_flag_ocvtaken = object["fg_flag_ocvtaken"].toBool();
+    double battery = object["battery"].toDouble();
 
     telemetry_local.is_running= is_running;
     telemetry_local.is_remote = is_remote;
@@ -96,24 +81,45 @@ Ide::IO::Telemetry telemetry(const QString &json)
     telemetry_local.depth = depth;
     telemetry_local.pressure = pressure;
     telemetry_local.temperature = temperature;
+    telemetry_local.amperage = amperage;
+    telemetry_local.voltage = voltage;
     telemetry_local.battery = battery;
     telemetry_local.is_charging = is_charging;
     telemetry_local.is_shell_running = is_shell_running;
     telemetry_local.is_motors_enabled = is_motors_enabled;
-    telemetry_local.fg_cycle_count = fg_cycle_count;
-    telemetry_local.fg_full_charge_capacity = fg_full_charge_capacity;
-    telemetry_local.fg_max_error = fg_max_error;
-    telemetry_local.fg_remaining_capacity = fg_remaining_capacity;
-    telemetry_local.fg_reset_count = fg_reset_count;
-    telemetry_local.fg_update_status = fg_update_status;
-    telemetry_local.fg_temp = fg_temp;
-    telemetry_local.amperage = amperage;
-    telemetry_local.voltage = voltage;
-    telemetry_local.fg_flag_fc = fg_flag_fc;
-    telemetry_local.fg_flag_qen = fg_flag_qen;
-    telemetry_local.fg_flag_rup_dis = fg_flag_rup_dis;
-    telemetry_local.fg_flag_vok_flag = fg_flag_vok_flag;
-    telemetry_local.fg_flag_ocvtaken = fg_flag_ocvtaken;
+
+    if (object.contains("battery_chip") && object["battery_chip"].toString() == "BQ34Z100G1") {
+        QJsonObject battery_obj = object["fg"].toObject();
+
+        int fg_cycle_count = battery_obj["cycle_count"].toInt();
+        int fg_full_charge_capacity = battery_obj["full_charge_capacity"].toInt();
+
+        int fg_max_error = battery_obj["max_error"].toInt();
+        int fg_remaining_capacity = battery_obj["remaining_capacity"].toInt();
+        int fg_reset_count = battery_obj["reset_count"].toInt();
+        int fg_update_status = battery_obj["update_status"].toInt();
+
+        double fg_temp = battery_obj["temp"].toDouble();
+
+        bool fg_flag_fc = battery_obj["flag_fc"].toBool();
+        bool fg_flag_qen = battery_obj["flag_qen"].toBool();
+        bool fg_flag_rup_dis = battery_obj["flag_rup_dis"].toBool();
+        bool fg_flag_vok_flag = battery_obj["flag_vok_flag"].toBool();
+        bool fg_flag_ocvtaken = battery_obj["flag_ocvtaken"].toBool();
+
+        telemetry_local.fg_cycle_count = fg_cycle_count;
+        telemetry_local.fg_full_charge_capacity = fg_full_charge_capacity;
+        telemetry_local.fg_max_error = fg_max_error;
+        telemetry_local.fg_remaining_capacity = fg_remaining_capacity;
+        telemetry_local.fg_reset_count = fg_reset_count;
+        telemetry_local.fg_update_status = fg_update_status;
+        telemetry_local.fg_temp = fg_temp;
+        telemetry_local.fg_flag_fc = fg_flag_fc;
+        telemetry_local.fg_flag_qen = fg_flag_qen;
+        telemetry_local.fg_flag_rup_dis = fg_flag_rup_dis;
+        telemetry_local.fg_flag_vok_flag = fg_flag_vok_flag;
+        telemetry_local.fg_flag_ocvtaken = fg_flag_ocvtaken;
+    }
 
     if (object.contains("vehicle_type") && object["vehicle_type"].toString() == "rov") {
         double fcu0_voltage  = object["fcu"].toArray()[0].toObject()["voltage"].toDouble();
@@ -143,6 +149,7 @@ Ide::IO::Notification notification(const QString &json)
 
     notification.status = object["status"].toString();
     notification.message = object["message"].toString();
+    qDebug() << notification.status << notification.message;
 
     return notification;
 }

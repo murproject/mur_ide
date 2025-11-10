@@ -267,12 +267,27 @@ blockquote {
 <li>Включить/Выключить отображение телеметрии [9]. При нажатие на данную кнопку появится всплывающее окно с информацией о заряде батареи и показания с датчиков аппарата. Данная кнопка активна только при подключении к аппарату.</li>
 <li>Информационные вкладки [10]. Console - отображение системных сообщений о запуске/остановке программ, так же в это окно попадают сообщения из stderr и stdout скрипта, запущенного на аппарате при активном подключение. Help - окно с данным текстом. Remote - окно в котором будут отображаться видеоизображения в режиме телеуправления [7].</li>
 </ul>
+<h4 id="горячие-клавиши">Горячие клавиши</h4>
+<p>Открыть файл - Ctrl+Shift+O<br>
+Сохранить файл - Ctrl+S<br>
+Сохранить файл как - Ctrl+Shift+S<br>
+Новый файл - Ctrl+Shift+N</p>
+<p>Увеличить шрифт - Ctrl+Shift+=<br>
+Уменьшить шрифт - Ctrl+Shift+-<br>
+Поиск и замена - Ctrl+F<br>
+Закрыть поиск и замену - Esc</p>
+<p>Показать телеметрию - F1<br>
+Запустить программу - F5<br>
+Остановить программу - F6<br>
+Начать телеуправление - F7<br>
+Записать изображение с обеих камер - F8<br>
+Записать видео с обеих камер - F9</p>
 <h4 id="подключение-к-аппарату">Подключение к аппарату</h4>
 <p>Все просто - вам нужно включить аппарат, подождать пока появится WiFi (mur_ssid), подключиться к нему (пароль по умолчанию vladivostok) и... Все готово!</p>
 <h4 id="запись-изображений-с-аппарата">Запись изображений с аппарата</h4>
 <p>В информационной вкладке Remote [10] отображается видео с камер аппарата. Видео можно записать (кнопка Record), а так же сделать фото (кнопка Capture). Сделанные фото и видео сохраняются на диске, куда установлена программа: C:\Users\User_name\Pictures\murImages</p>
 <p>Если у вас возникли проблемы с получением изображения с аппарата, то Вам необходимо отключить Брандмауэр Windows.</p>
-<h4 id="телеуправление-с-клавиатуры">Телеуправление с клавиатуры</h4>
+<h4 id="телеуправление-аппаратом-с-клавиатуры">Телеуправление аппаратом с клавиатуры</h4>
 <p>Для телеуправления аппаратом с помощью клавиатуры необходимо нажать на информационную вкладку Remote [10], раскрыть меню Gamepad axes и нажать на появившуюся область.</p>
 <p>Теперь вы можете управлять аппаратом с помощью кнопок W, A, S, D, Q, E.</p>
 <h4 id="запуск-симулятора">Запуск симулятора</h4>
@@ -280,6 +295,15 @@ blockquote {
 <blockquote>
 <p><strong>Важно</strong>: вы не можете управлять LED лентой в симуляторе. Для получения изображений из симулятора есть специальные функции <em><strong>get_image_front</strong></em> и <em><strong>get_image_bottom</strong></em>, данные функции <strong>НЕ</strong> работают на аппарате. Для получения видеоизображений воспользуйтесь функциями из OpenCV. Так же важно отметить, формат некоторых данных различен (показания курса, глубины). Имейте это ввиду.</p>
 </blockquote>
+<h4 id="телеуправление-в-симуляторе">Телеуправление в симуляторе</h4>
+<p>Для того, чтобы включить режим телеуправления в симуляторе необходимо нажать кнопку <strong>Remote mode</strong>.<br>
+После этого будет доступно управление с помощью следующих клавиш:</p>
+<ul>
+<li>W, A, S, D, Z, X - движение в горизонтальной плоскости;</li>
+<li>Q, E - всплытие и погружение;</li>
+<li>F, G - выстрел и сброс маркера;</li>
+<li>Пробел - открыть/закрыть захват.</li>
+</ul>
 <h4 id="программирование---инициализация">Программирование - инициализация</h4>
 <p>Первым делом вам необходимо подключить библиотеку pymurapi. Для того, чтобы это сделать вызовите следующий код:</p>
 <pre><code class="language-Python"><span class="hljs-keyword">import</span> pymurapi <span class="hljs-keyword">as</span> mur
@@ -321,7 +345,7 @@ auv.set_rgb_color(<span class="hljs-number">128</span>, <span class="hljs-number
 auv.set_single_led_color(<span class="hljs-number">12</span>, <span class="hljs-number">128</span>, <span class="hljs-number">0</span>, <span class="hljs-number">64</span>) 
 </code></pre>
 <pre><code class="language-Python"><span class="hljs-keyword">def</span> <span class="hljs-title function_">set_motor_power</span>(<span class="hljs-params">motor_id, power</span>)
-<span class="hljs-comment"># C помощью данной функции вы можете задать тягу на моторы от -100 до 100. Где motor_id - номер мотора от 0 до 5 для аппарата и от 0 до 3 для симулятора. </span>
+<span class="hljs-comment"># C помощью данной функции вы можете задать тягу на моторы от -100 до 100. Где motor_id - номер мотора от 0 до 3 для аппарата и от 0 до 4 для симулятора. </span>
 <span class="hljs-comment"># Пример использования:</span>
 auv.set_motor_power(<span class="hljs-number">0</span>, <span class="hljs-number">50</span>) 
 auv.set_motor_power(<span class="hljs-number">1</span>, -<span class="hljs-number">50</span>) 
@@ -340,12 +364,12 @@ depth = auv.get_depth()
 yaw = auv.get_yaw()
 </code></pre>
 <pre><code class="language-Python"><span class="hljs-keyword">def</span> <span class="hljs-title function_">get_pitch</span>()
-<span class="hljs-comment"># Данная функция возвращает значение крена. </span>
+<span class="hljs-comment"># Данная функция возвращает значение дифферента. </span>
 <span class="hljs-comment"># Пример использования:</span>
 pitch = auv.get_pitch()
 </code></pre>
 <pre><code class="language-Python"><span class="hljs-keyword">def</span> <span class="hljs-title function_">get_roll</span>()
-<span class="hljs-comment"># Данная функция возвращает значение дифферента. </span>
+<span class="hljs-comment"># Данная функция возвращает значение крена. </span>
 <span class="hljs-comment"># Пример использования:</span>
 roll = auv.get_roll()
 </code></pre>

@@ -7,9 +7,14 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_REQUIRED_FLAGS -std=c++17)
 
-find_package(SDL2 REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(Threads)
+
+if (WIN32)
+    find_package(glfw3 3.4 REQUIRED)
+else()
+    find_package(glfw3 3.3 REQUIRED)
+endif()
 
 find_package(Qt6 REQUIRED COMPONENTS
         Core
@@ -25,10 +30,6 @@ find_package(Qt6 REQUIRED COMPONENTS
 
 
 add_executable(${PROJECT_NAME} WIN32 resources/icon.rc)
-
-file(GLOB QJoystick "${QJoy}/src/*.cpp" "${QJoy}/src/*.h"
-    "${QJoy}/src/QJoysticks/*.cpp" "${QJoy}/src/QJoysticks/*.h"
-)
 
 target_sources(${PROJECT_NAME}
         PRIVATE sources/main.cpp
@@ -82,7 +83,8 @@ target_sources(${PROJECT_NAME}
         PRIVATE sources/ApiTokenDialog.hxx
         PRIVATE sources/Joystick.cpp
         PRIVATE sources/Joystick.hxx
-        PRIVATE ${QJoystick}
+        PRIVATE sources/Keyboard.cpp
+        PRIVATE sources/Keyboard.hxx
     )
 
 if (WIN32)
@@ -96,15 +98,6 @@ endif()
 target_compile_features(${PROJECT_NAME}
         PRIVATE cxx_std_17)
 
-target_include_directories(${PROJECT_NAME} PRIVATE
-    ${SDL2_DIR}/include
-    ${QJoy}/src
-)
-
-target_compile_definitions(${PROJECT_NAME} PRIVATE
-    SDL_SUPPORTED
-)
-
 target_link_libraries(${PROJECT_NAME}
         PRIVATE Qt6::Core
         PRIVATE Qt6::Widgets
@@ -117,6 +110,10 @@ target_link_libraries(${PROJECT_NAME}
         PRIVATE Qt6::Gui
         PRIVATE Qt6::Concurrent
         PRIVATE ${OpenCV_LIBS}
-        ${SDL2_LIBRARIES}
-        ${CMAKE_THREAD_LIBS_INIT})
+        ${CMAKE_THREAD_LIBS_INIT}
+        glfw
+    )
 
+if (NOT WIN32)
+    install(TARGETS ${PROJECT_NAME} DESTINATION bin)
+endif()

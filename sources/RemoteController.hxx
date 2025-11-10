@@ -145,6 +145,7 @@ private:
 
     RovControls m_rovControls;
     int axis_treshold(int value);
+    int keyboard_threshold(int value);
 
     QString getTimestamp();
     QString m_imagesDir = QStandardPaths::writableLocation(QStandardPaths::PicturesLocation) + "/murImages/";

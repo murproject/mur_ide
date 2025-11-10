@@ -1,5 +1,6 @@
 #include "Joystick.hxx"
 #include <QDebug>
+#include <unordered_map>
 
 namespace Ide::Ui{
 Joystick *Joystick::instance = nullptr;
@@ -7,11 +8,17 @@ qml::RegisterType<Joystick> Joystick::Register;
 
 QList<QString> JoystickAxes::JoystickAxesNames = {
     "···",
-    "Left X",
-    "Left Y",
-    "Right X",
-    "Right Y",
+    "Left -X",
+    "Left +X",
+    "Left -Y",
+    "Left +Y",
+    "Right -X",
+    "Right +X",
+    "Right -Y",
+    "Right +Y",
+    "-L2",
     "L2",
+    "-R2",
     "R2",
     "A",
     "B",
@@ -33,11 +40,17 @@ QList<QString> JoystickAxes::JoystickAxesNames = {
 
 QList<QString> JoystickAxes::MovementAxesNames = {
     "Empty",
-    "Axis X (yaw)",
-    "Axis Y (forward)",
-    "Axis W (side)",
-    "Axis Z (depth)",
+    "mAxis X (yaw)",
+    "pAxis X (yaw)",
+    "mAxis Y (forward)",
+    "pAxis Y (forward)",
+    "mAxis W (side)",
+    "pAxis W (side)",
+    "mAxis Z (depth)",
+    "pAxis Z (depth)",
+    "-L2",
     "L2",
+    "-R2",
     "R2",
     "Slower",
     "Faster",
@@ -45,11 +58,14 @@ QList<QString> JoystickAxes::MovementAxesNames = {
 };
 
 Joystick::Joystick() {
+    if (!glfwInit()) {
+        throw std::runtime_error{"Failed to initialize GLFW"};
+    }
 
     if (instance != nullptr) {
         throw std::runtime_error{"Instance of gamepad already exists"};
     }
-    m_joystick = QJoysticks::getInstance();
+
     loadSettings();
 
     qmlRegisterUncreatableType<JoystickAxes>("mur.GamepadAxes", 1, 0, "GamepadAxes", "");
@@ -60,64 +76,90 @@ Joystick::Joystick() {
     m_updateTimer->start();
 
     this->connectJoystick();
-    connect(QJoysticks::getInstance(), &QJoysticks::axisChanged, this, &Joystick::onAxisEvent);
-    connect(QJoysticks::getInstance(), &QJoysticks::buttonChanged, this, &Joystick::onButtonEvent);
-    connect(QJoysticks::getInstance(), &QJoysticks::povChanged, this, &Joystick::onPOVEvent);
-    connect(QJoysticks::getInstance(), &QJoysticks::countChanged, this, &Joystick::connectJoystick);
+    glfwSetJoystickCallback(joystickConnectionCallback);
+}
+
+void Joystick::joystickConnectionCallback(int jid, int event)
+{
+    if (instance) {
+        instance->connectJoystick();
+    }
 }
 
 void Joystick::onUpdateTimeout() {
-    if (m_axisChanged) {
-        m_axisChanged = false;
-        emit axesValueChanged();
-    }
-}
+    glfwPollEvents();
 
-void Joystick::onAxisEvent(int device, int axis, double value){
-    m_gamepadAllValues[axis + 1] = value;
+    if (isJoystickConnected() and !m_isKeyboardMode) {
+        int axisCount, buttonCount;
+        const float* axes = glfwGetJoystickAxes(GLFW_JOYSTICK_1, &axisCount);
+        const unsigned char* buttons = glfwGetJoystickButtons(GLFW_JOYSTICK_1, &buttonCount);
 
-    if (m_isRebinding && qAbs(value) > 0.6) {
-        rebindAxis(axis + 1);
-    }
+        for (int i = 0; i < axisCount; i++) {
+            onAxisEvent(i * 2, axisCount, axes[i]);
+        }
 
-    m_axisChanged = true;
-}
-
-void Joystick::onButtonEvent(int device, int button, bool pressed){
-    double value = (pressed ? 1 : -1);
-    m_gamepadAllValues[button + 7] = value;
-
-    if (m_isRebinding && qAbs(value) > 0.6) {
-        rebindAxis(button + 7);
-    }
-
-    emit axesValueChanged();
-}
-
-void Joystick::onPOVEvent(int device, int pov, int angle){
-    auto value = angle / 90 + 1;
-
-    if (angle > -1) {
-        m_gamepadAllValues[16 + value] = 1;
-    } else {
-        for(int i = povStartIndex; i < povEndIndex; i++){
-            m_gamepadAllValues[i] = -1;
+        for (int i = 0; i < buttonCount; i++) {
+            onButtonEvent(i, axisCount * 2 + 1, buttons[i]);
         }
     }
+}
 
-    if (m_isRebinding && qAbs(value) > 0.6) {
-        rebindAxis(16 + value);
+void Joystick::onAxisEvent(int axis, int count, double value){
+    int current_index = (value < 0.0) ? axis + 1 : axis + 2;
+    int another_index = current_index % 2 == 0 ? axis + 1 : axis + 2;
+
+    double previousValue = m_gamepadAllValues[current_index];
+
+    if (value == 0.0) {
+        m_gamepadAllValues[current_index] = 0.0;
+        m_gamepadAllValues[another_index] = 0.0;
+    } else {
+        m_gamepadAllValues[current_index] = qAbs(value);
+        m_gamepadAllValues[another_index] = 0.0;
     }
 
-    emit axesValueChanged();
+    if (previousValue != value) {
+        emit axesValueChanged();
+    }
+
+    if (m_isRebinding && qAbs(qAbs(value) - m_calibrationValues[current_index]) > rebindThreshold) {
+        rebindAxis(current_index);
+    }
+}
+
+void Joystick::onButtonEvent(int button, int count, bool pressed){
+    int index = button + count;
+    double previousValue = m_gamepadAllValues[index];
+    double value = (pressed ? 1 : 0);
+    m_gamepadAllValues[index] = value;
+
+    if (previousValue != value){
+        emit axesValueChanged();
+    }
+
+    if (m_isRebinding && (qAbs(value - m_calibrationValues[index])) > rebindThreshold) {
+        rebindAxis(index);
+    }
 }
 
 int Joystick::getAxisValue(JoystickAxes::MovementAxes axis){
-    return calcAxisValue(m_gamepadAllValues[m_gamepadAxesBindings[axis]] * (m_gamepadAxesInversions[axis] ? -100 : 100));
+    double value = qAbs(m_gamepadAllValues[m_gamepadAxesBindings[axis]] - m_calibrationValues[m_gamepadAxesBindings[axis]]);
+    double range = value * (1 + m_calibrationValues[m_gamepadAxesBindings[axis]]);
+
+    return calcAxisValue(std::ceil(range * 100));
+}
+
+int Joystick::getAxesValue(JoystickAxes::MovementAxes negative_axis, JoystickAxes::MovementAxes positive_axis){
+    int m_value = -1 * getAxisValue(negative_axis);
+    int p_value = getAxisValue(positive_axis);
+    return qAbs(m_value) > p_value ? m_value : p_value;
 }
 
 bool Joystick::getButtonValue(JoystickAxes::MovementAxes axis) {
-    return calcAxisValue(m_gamepadAllValues[m_gamepadAxesBindings[axis]] * (m_gamepadAxesInversions[axis] ? -100 : 100)) > 50;
+    double value = m_gamepadAllValues[m_gamepadAxesBindings[axis]] - m_calibrationValues[m_gamepadAxesBindings[axis]];
+    double range = value * (1 + m_calibrationValues[m_gamepadAxesBindings[axis]]);
+
+    return calcAxisValue(std::ceil(range * 100)) > m_buttonThreshold;
 }
 
 bool Joystick::getAxisInversion(JoystickAxes::MovementAxes axis) {
@@ -156,7 +198,12 @@ void Joystick::swapAxes(int axis1, int axis2) {
 }
 
 void Joystick::requestRebind(int axis) {
-    m_isRebinding = true;
+    if (axis == JoystickAxes::AxisZero) {
+        m_isRebinding = false;
+        emit rebinded();
+    } else {
+        m_isRebinding = true;
+    }
     m_currentlyRebindingAxis = static_cast<JoystickAxes::MovementAxes>(axis);
     emit rebindingChanged();
 }
@@ -179,19 +226,31 @@ QList<bool> Joystick::getAllAxesInversions() {
     return axes;
 }
 
-QList<QString> Joystick::getAllAxesBindings() {
-    QList<QString> axes;
+QVariantList Joystick::getAllAxesBindings() {
+    QVariantList axes;
 
     for (int i = 0; i < JoystickAxes::AxisCount; i++) {
-        axes.append(getGamepadAxisName(i));
+        QVariantMap value;
+        auto[name, index] = getGamepadAxisName(i);
+        value["axis_index"] = index;
+        value["axis_name"] = name;
+        axes.append(value);
     }
 
     return axes;
 }
 
-QString Joystick::getGamepadAxisName(int axis)
+std::pair<QString, QString> Joystick::getGamepadAxisName(int axis)
 {
-    return JoystickAxes::JoystickAxesNames[m_gamepadAxesBindings[static_cast<JoystickAxes::MovementAxes>(axis)]];
+    int index = m_gamepadAxesBindings[static_cast<JoystickAxes::MovementAxes>(axis)];
+
+    QString axis_name = (index < 0 || index >= JoystickAxes::JoystickAxesNames.size())
+                            ? QString::number(index)
+                            : JoystickAxes::JoystickAxesNames[m_gamepadAxesBindings[static_cast<JoystickAxes::MovementAxes>(axis)]];
+
+    QString axis_index = index == 0 ? "···" : QString::number(index);
+
+    return {axis_name, axis_index};
 }
 
 QString Joystick::getMovementAxisName(int axis)
@@ -218,17 +277,12 @@ void Joystick::addForceAxisValue(int axis, int value) {
 }
 
 bool Joystick::isJoystickConnected() {
-    return m_joystick->joystickExists(0);
+    return glfwJoystickPresent(GLFW_JOYSTICK_1);
 }
 
 Joystick *Joystick::Create(){
     instance = new Joystick{};
     return instance;
-}
-
-QJoysticks *Joystick::getJoystick()
-{
-    return m_joystick;
 }
 
 int Joystick::calcAxisValue(int val) {
@@ -244,6 +298,16 @@ int Joystick::calcAxisValue(int val) {
     val *= (invert ? -1 : 1);
     val = qMax(qMin(val, 100), -100);
     return val;
+}
+
+bool Joystick::getKeyboardMode() {
+    return m_isKeyboardMode;
+}
+
+void Joystick::setKeyboardMode(bool val)
+{
+    m_isKeyboardMode = val;
+    emit keyboardModeChanged();
 }
 
 int Joystick::getDeadzone() {
@@ -265,69 +329,175 @@ void Joystick::setExpFactor(double value) {
     emit expFactorChanged();
 }
 
-void Joystick::saveSettings()
+int Joystick::getButtonThreshold() {
+    return m_buttonThreshold;
+}
+
+void Joystick::setButtonThreshold(int value) {
+    m_buttonThreshold = value;
+    rebindThreshold = static_cast<double>(value) / 100;
+    emit buttonThresholdChanged();
+}
+
+void Joystick::calibrateJoystick() {
+    const int numSamples = 10;
+    QMap<int, double> samples;
+
+    for (int i = 0; i < numSamples; i++) {
+        for (int k = 0; k < m_gamepadAllValues.size(); k++) {
+            samples[k] += qAbs(m_gamepadAllValues[k]);
+        }
+    }
+
+    for (int i = 0; i < m_gamepadAllValues.size(); i++) {
+        m_calibrationValues[i] = samples[i] / numSamples;
+    }
+}
+
+void Joystick::resetCalibration() {
+    for(int i = 0; i < m_calibrationValues.size(); i++){
+        m_calibrationValues[i] = 0;
+    }
+}
+
+void Joystick::setCalibration(bool calibrated){
+    if (calibrated) {
+        calibrateJoystick();
+    } else {
+        resetCalibration();
+    }
+    m_isCalibrated = calibrated;
+}
+
+bool Joystick::getCalibration(){
+    return m_isCalibrated;
+}
+
+QVariantList Joystick::getPresetNames()
 {
     QSettings settings("settings.ini", QSettings::IniFormat);
 
-    settings.beginWriteArray("Gamepad/axes");
+    QStringList groupsNames = settings.childGroups();
+    QVariantList presetNames;
+
+    for(int i=0 ; i < groupsNames.length() ; i++)
+    {
+        QString some_name = groupsNames.at(i);
+        if (some_name.startsWith("Preset")){
+            presetNames.append(some_name.remove(0, 7));
+        }
+    }
+
+    return presetNames;
+}
+
+void Joystick::deletePreset(QString preset_name){
+    QSettings settings("settings.ini", QSettings::IniFormat);
+    settings.remove(preset_name);
+}
+
+void Joystick::setLastPresetName(QString name){
+    QSettings settings("settings.ini", QSettings::IniFormat);
+
+    settings.beginGroup("Gamepad");
+    settings.setValue("preset_name", name);
+    settings.endGroup();
+}
+
+QString Joystick::getLastPresetName(){
+    QSettings settings("settings.ini", QSettings::IniFormat);
+
+    settings.beginGroup("Gamepad");
+    QString name = settings.value("preset_name", 0).toString();
+    settings.endGroup();
+
+    return name == "0" ? "Default" : name;
+}
+
+void Joystick::saveSettings()
+{
+    QSettings settings("settings.ini", QSettings::IniFormat);
+    QString name = "Preset_" + getLastPresetName();
+
+    settings.beginWriteArray(name + "/axes");
     for (int i = 0; i < JoystickAxes::AxisCount; i++) {
-        settings.setArrayIndex(i);
+        settings.beginGroup(metaEnum.valueToKey(i));
         settings.setValue("binding", m_gamepadAxesBindings[static_cast<JoystickAxes::MovementAxes>(i)]);
-        settings.setValue("inversion", m_gamepadAxesInversions[static_cast<JoystickAxes::MovementAxes>(i)]);
+        settings.setValue("calibration", m_calibrationValues[static_cast<JoystickAxes::MovementAxes>(i)]);
+        settings.endGroup();
     }
     settings.endArray();
 
-    settings.setValue("Gamepad/deadzone", m_deadzone);
-    settings.setValue("Gamepad/exp_factor", m_expFactor);
-    settings.endArray();
+    settings.setValue(name + "/deadzone", m_deadzone);
+    settings.setValue(name + "/exp_factor", m_expFactor);
+    settings.setValue(name + "/button_threshold", m_buttonThreshold);
+    settings.setValue(name + "/calibrated", m_isCalibrated);
+
+    emit presetSaved();
 }
 
 void Joystick::loadSettings()
 {
     QSettings settings("settings.ini", QSettings::IniFormat);
+    QString name = "Preset_" + getLastPresetName();
 
-    int size = settings.beginReadArray("Gamepad/axes");
-    for (int i = 0; i < size; i++) {
-        settings.setArrayIndex(i);
-        m_gamepadAxesBindings[static_cast<JoystickAxes::MovementAxes>(i)] = settings.value("binding", 0).toInt();
-        m_gamepadAxesInversions[static_cast<JoystickAxes::MovementAxes>(i)] = settings.value("inversion", false).toBool();
-        m_gamepadAxesBindings[JoystickAxes::AxisW] = 0;
+    settings.beginReadArray(name + "/axes");
+
+    for (int i = 0; i < JoystickAxes::AxisCount ; i++) {
+        settings.beginGroup(metaEnum.valueToKey(i));
+        m_calibrationValues[static_cast<JoystickAxes::MovementAxes>(i)] = settings.value("calibration", 0.0).toDouble();
+        m_gamepadAxesBindings[static_cast<JoystickAxes::MovementAxes>(i)] = settings.value("binding", 0).toUInt();
+        settings.endGroup();
     }
+
     settings.endArray();
 
-    if (m_gamepadAxesBindings[JoystickAxes::AxisX] == 0) {
-        m_gamepadAxesBindings[JoystickAxes::AxisX] = 1;
-    }
+    m_gamepadAxesBindings[JoystickAxes::AxisWm] = 0;
+    m_gamepadAxesBindings[JoystickAxes::AxisWp] = 0;
 
-    if (m_gamepadAxesBindings[JoystickAxes::AxisY] == 0) {
-        m_gamepadAxesBindings[JoystickAxes::AxisY] = 2;
-    }
+    toDefaultSettings(false);
 
-    if (m_gamepadAxesBindings[JoystickAxes::AxisZ] == 0) {
-        m_gamepadAxesBindings[JoystickAxes::AxisZ] = 4;
-    }
-
-    if (m_gamepadAxesBindings[JoystickAxes::SpeedSlow] == 0) {
-        m_gamepadAxesBindings[JoystickAxes::SpeedSlow] = 7;
-    }
-
-    if (m_gamepadAxesBindings[JoystickAxes::SpeedFast] == 0) {
-        m_gamepadAxesBindings[JoystickAxes::SpeedFast] = 8;
-    }
-
-    m_deadzone = settings.value("Gamepad/deadzone", 0).toInt();
-    m_expFactor = settings.value("Gamepad/exp_factor", 1.0).toDouble();
-
-    settings.endArray();
+    m_deadzone = settings.value(name + "/deadzone", 0).toInt();
+    m_expFactor = settings.value(name + "/exp_factor", 1.0).toDouble();
+    m_buttonThreshold = settings.value(name + "/button_threshold", 50).toInt();
+    m_isCalibrated = settings.value(name + "/calibrated", false).toBool();
 
     emit deadzoneChanged();
     emit expFactorChanged();
+    emit buttonThresholdChanged();
+    emit calibrationChanged();
+    emit rebinded();
+}
+
+void Joystick::toDefaultSettings(bool force) {
+    std::unordered_map<JoystickAxes::MovementAxes, int> defaultAxes = {
+        {JoystickAxes::AxisXm, 1},
+        {JoystickAxes::AxisXp, 2},
+        {JoystickAxes::AxisYm, 3},
+        {JoystickAxes::AxisYp, 4},
+        {JoystickAxes::AxisZm, 7},
+        {JoystickAxes::AxisZp, 8},
+        {JoystickAxes::SpeedSlow, 17},
+        {JoystickAxes::SpeedFast, 18},
+    };
+
+    for (const auto& [axis, defaultValue] : defaultAxes) {
+        auto currentValue = m_gamepadAxesBindings[axis];
+        m_gamepadAxesBindings[axis] = force || currentValue == 0 ? defaultValue : currentValue;
+    }
+
+    if (force) {
+        setDeadzone(0);
+        setExpFactor(1.0);
+        setButtonThreshold(50);
+    }
+
     emit rebinded();
 }
 
 void Joystick::connectJoystick()
 {
-    auto joy = QJoysticks::getInstance()->joystickExists(0);
+    auto joy = glfwJoystickPresent(GLFW_JOYSTICK_1);
 
     if (!qApp->closingDown()) {
         emit onJoystickConnectedChanged(joy);

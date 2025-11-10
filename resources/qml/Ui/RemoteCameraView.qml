@@ -4,7 +4,7 @@ import mur 1.0
 
 Rectangle {
     id: remoteView;
-    property var controller: Controllers.image;
+    property var controller: Controllers.remote;
     height: parent.height;
     width: parent.width;
     color: Style.bgBlue;

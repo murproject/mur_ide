@@ -3,15 +3,28 @@ import mur 1.0
 import QtQuick.Layouts 1.12
 
 import mur.GamepadAxes 1.0
+import input.KeyboardAxes 1.0
 
 Rectangle {
     id: remoteView;
-    property var controller: Controllers.image;
+    property var controller: Controllers.remote;
     property string tabTitle: controller.recordingVideo ? "Remote (recording)" : "Remote";
     height: parent.height;
     width: parent.width;
     color: Style.bgBlue;
     property bool shrink: Controllers.network.rov ? width < 450 : width < 300;
+
+    function calculateValue(index1, index2) {
+            var value1 = Controllers.joystick.allAxes[index1];
+            var value2 = Controllers.joystick.allAxes[index2];
+            return (value1 > value2) ? -value1 : value2;
+        }
+
+    function calculateValueKeyboard(index1, index2) {
+        var value1 = Controllers.keyboard.allAxes[index1] * 100;
+        var value2 = Controllers.keyboard.allAxes[index2] * 100;
+        return (Math.abs(value1) > Math.abs(value2)) ? value1 : value2;
+    }
 
     Rectangle {
         id: remoteHeader;
@@ -69,7 +82,8 @@ Rectangle {
                 width: parent.width / 4;
                 font.family: Style.fontMono;
                 anchors.verticalCenter: parent.verticalCenter;
-                text: Controllers.joystick.allAxes[GamepadAxes.AxisX];
+                text: Controllers.joystick.keyboardMode ? calculateValueKeyboard(KeyboardAxes.AxisXm,  KeyboardAxes.AxisXp)
+                                                             : calculateValue(GamepadAxes.AxisXm, GamepadAxes.AxisXp);
                 horizontalAlignment: Text.AlignRight;
                 font.pointSize: 10;
             }
@@ -78,7 +92,8 @@ Rectangle {
                 width: parent.width / 4;
                 font.family: Style.fontMono;
                 anchors.verticalCenter: parent.verticalCenter;
-                text: Controllers.joystick.allAxes[GamepadAxes.AxisY];
+                text: Controllers.joystick.keyboardMode ? calculateValueKeyboard(KeyboardAxes.AxisYm,  KeyboardAxes.AxisYp) :
+                                                               calculateValue(GamepadAxes.AxisYm, GamepadAxes.AxisYp);
                 horizontalAlignment: Text.AlignRight;
                 font.pointSize: 10;
             }
@@ -87,7 +102,8 @@ Rectangle {
                 width: parent.width / 4;
                 font.family: Style.fontMono;
                 anchors.verticalCenter: parent.verticalCenter;
-                text: Controllers.joystick.allAxes[GamepadAxes.AxisZ];
+                text: Controllers.joystick.keyboardMode ? calculateValueKeyboard(KeyboardAxes.AxisZm,  KeyboardAxes.AxisZp) :
+                                                               calculateValue(GamepadAxes.AxisZm, GamepadAxes.AxisZp);
                 horizontalAlignment: Text.AlignRight;
                 font.pointSize: 10;
             }
@@ -183,6 +199,7 @@ Rectangle {
                 shortcut.sequence: "F8";
                 icon: icons.fa_camera;
                 visible: !remoteToolbar.collapsed;
+                setFocus: false;
 
                 onClicked: {
                     if (!front.haveImage && !bottom.haveImage) {
@@ -204,6 +221,7 @@ Rectangle {
                 icon: controller.recordingVideo ? icons.fa_circle : icons.fa_video_camera;
                 iconColor: controller.recordingVideo ? Style.red : Style.lightGray;
                 visible: !remoteToolbar.collapsed;
+                setFocus: false;
 
                 onClicked: {
                     if (!controller.recordingVideo && !front.haveImage && !bottom.haveImage) {
@@ -230,6 +248,7 @@ Rectangle {
                 label.text: "Compass";
                 icon : icons.fa_compass;
                 highlight: compass.visible;
+                setFocus: false;
                 onClicked: {
                     compass.visible = !compass.visible;
                 }
@@ -242,8 +261,37 @@ Rectangle {
                 label.text: "Altimeter";
                 icon : icons.fa_arrows_v;
                 highlight: altimeter.visible;
+                setFocus: false;
                 onClicked: {
                     altimeter.visible = !altimeter.visible;
+                }
+            }
+
+
+            UiButton {
+                id: controlModeButton;
+                property bool switchMode: false;
+                visible: fullWindow.visible && !remoteToolbar.collapsed && remoteFooter.autoButtonsVisible;
+                anchors.verticalCenter: parent.verticalCenter;
+                toolTip: "Switch controls";
+                label.text: "Control mode";
+                icon: switchMode ? icons.fa_keyboard_o : icons.fa_gamepad;
+                highlight: switchMode;
+
+
+                Connections {
+                    target: keyboardControl
+                    function onActiveChanged() {
+                        if (keyboardControl.active) {
+                            controlModeButton.switchMode = true;
+                        } else {
+                            controlModeButton.switchMode = false;
+                        }
+                    }
+                }
+
+                onClicked: {
+                    Controllers.joystick.setKeyboardMode(!Controllers.joystick.getKeyboardMode());
                 }
             }
 
@@ -261,6 +309,7 @@ Rectangle {
                 label.text: remoteView.width < 420 ? "A" : "Alt Yaw";
                 toolTip: "Yaw regulator Alt mode";
                 visible: !remoteToolbar.collapsed && Controllers.network.rov && remoteFooter.autoButtonsVisible;
+                setFocus: false;
                 onClicked: {
                     controller.autoYawAltmode = !controller.autoYawAltmode;
                 }
@@ -273,6 +322,7 @@ Rectangle {
                 toolTip: "Auto Yaw regulator";
                 icon: Controllers.network.rov ? "" : icons.fa_compass;
                 visible: !remoteToolbar.collapsed && remoteFooter.autoButtonsVisible;
+                setFocus: false;
                 onClicked: {
                     controller.autoYaw = !controller.autoYaw;
                 }
@@ -284,6 +334,7 @@ Rectangle {
                 label.text: remoteView.shrink ? "P" : "Pitch";
                 toolTip: "Auto Pitch regulator";
                 visible: !remoteToolbar.collapsed && Controllers.network.rov && remoteFooter.autoButtonsVisible;
+                setFocus: false;
                 onClicked: {
                     controller.autoPitch = !controller.autoPitch;
                 }
@@ -295,6 +346,7 @@ Rectangle {
                 label.text: remoteView.shrink ? "R" : "Roll";
                 toolTip: "Auto Roll regulator";
                 visible: !remoteToolbar.collapsed && Controllers.network.rov && remoteFooter.autoButtonsVisible;
+                setFocus: false;
                 onClicked: {
                     controller.autoRoll = !controller.autoRoll;
                 }
@@ -307,6 +359,7 @@ Rectangle {
                 toolTip: "Auto Depth regulator";
                 icon: Controllers.network.rov ? "" : icons.fa_arrows_v;
                 visible: !remoteToolbar.collapsed && remoteFooter.autoButtonsVisible;
+                setFocus: false;
                 onClicked: {
                     controller.autoDepth = !controller.autoDepth;
                 }
@@ -322,6 +375,7 @@ Rectangle {
                 toolTip: "Enable/disable all regulators";
                 visible: !remoteToolbar.collapsed && remoteFooter.autoButtonsVisible;
                 frameless: true;
+                setFocus: false;
                 onClicked: {
                     let state = allOff;
                     controller.autoYaw = state;
@@ -344,6 +398,7 @@ Rectangle {
                 anchors.verticalCenter: parent.verticalCenter;
                 toolTip: "Toggle panel";
                 icon : remoteToolbar.collapsed ? icons.fa_arrow_right : icons.fa_arrow_left;
+                setFocus: false;
                 onClicked: {
                     remoteToolbar.collapsed = !remoteToolbar.collapsed;
                 }

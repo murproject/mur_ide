@@ -49,7 +49,7 @@ ColumnLayout {
                 stepSize: 10;
 
                 onValueChanged: {
-                    Controllers.image.setServoValue(root.device, index, value);
+                    Controllers.remote.setServoValue(root.device, index, value);
                 }
                 Connections {
                     target: root;
@@ -58,7 +58,7 @@ ColumnLayout {
                     }
                 }
                 Connections {
-                    target: Controllers.image;
+                    target: Controllers.remote;
                     onServoValueChanged: function(device, servo, value) {
                         if (device === root.device && servo === sliderServo.index) {
                             sliderServo.value = value;

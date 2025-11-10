@@ -3,6 +3,7 @@
 #include "QmlImageItem.hxx"
 #include "QmlUtils.hxx"
 #include "RemoteController.hxx"
+#include "SettingsController.hxx"
 
 #include <QApplication>
 #include <QDebug>
@@ -51,12 +52,13 @@ void Application::initialize()
                                   "Please move it to another directory or reinstall it\n"
                                   "Путь к приложению содержит символы отличные от ASCII (русские "
                                   "буквы). Переместите приложение или переустановите его.",
-                                  "OK");
+                                  QMessageBox::Ok);
             exit(0xDEADBEAF);
         }
     }
 
-    m_resourceDirectory = path.absolutePath() + "/resources/";
+    Ide::Ui::SettingsController::Create();
+    m_resourceDirectory = Ide::Ui::SettingsController::instance->getResourcePath();
     setupEnvironment();
 
     Ide::qml::InitializeControllers();

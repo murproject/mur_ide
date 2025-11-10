@@ -128,8 +128,14 @@ MenuBar {
 
             Instantiator  {
                 model: controller.examples;
-                onObjectAdded: itemExamples.insertItem(index, object);
-                onObjectRemoved: itemExamples.removeItem(object);
+                onObjectAdded: function(index, object) {
+                    itemExamples.insertItem(index, object);
+                }
+
+                onObjectRemoved: function(object) {
+                    itemExamples.removeItem(object);
+                }
+
 
                 delegate: MenuItem  {
                     id: exampleMenuItem;

@@ -47,7 +47,7 @@ void ApiTokenDialog::createConntetions()
     connect(m_applyButton.data(), &QPushButton::clicked, [this]{
         m_token = m_tokenEdit->text().trimmed();
         if (m_token.size() != 32) {
-            QMessageBox::warning(nullptr, "API Token size" ,"API Token must be 32 characters.", "Ok");
+            QMessageBox::warning(nullptr, "API Token size" ,"API Token must be 32 characters.", QMessageBox::Ok);
             return;
         }
 

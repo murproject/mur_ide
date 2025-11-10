@@ -1,4 +1,13 @@
 #include "ApplicationController.hxx"
+#include "ApplicationLogger.hxx"
+#include "ApplicationMenu.hxx"
+#include "EditorController.hxx"
+#include "RemoteController.hxx"
+#include "LocalScriptsController.hxx"
+#include "NetworkController.hxx"
+#include "SimulatorController.hxx"
+#include "UpdateController.hxx"
+#include "SettingsController.hxx"
 
 namespace Ide::Ui {
 
@@ -42,7 +51,7 @@ LocalScriptsController *ApplicationController::getScripts()
     return LocalScriptsController::instance;
 }
 
-RemoteController *ApplicationController::getImage()
+RemoteController *ApplicationController::getRemote()
 {
     return RemoteController::instance;
 }
@@ -55,6 +64,17 @@ UpdateController *ApplicationController::getUpdates()
 Joystick *ApplicationController::getJoystick()
 {
     return Joystick::instance;
+}
+
+SettingsController *ApplicationController::getSettings()
+{
+    return SettingsController::instance;
+}
+
+
+Keyboard *ApplicationController::getKeyboard()
+{
+    return Keyboard::instance;
 }
 
 ApplicationController *ApplicationController::Create()

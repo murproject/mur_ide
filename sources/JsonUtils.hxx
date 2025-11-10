@@ -12,6 +12,7 @@ struct Telemetry
     QString vehicle_type;
     QString vehicle_name;
     QString software_version;
+    QString battery_chip;
 
     bool is_running = false;
     bool is_remote = false;
@@ -26,6 +27,8 @@ struct Telemetry
     double depth = 0.0;
     double pressure = 0.0;
     double temperature = 0.0;
+    double amperage = 0.0;
+    double voltage = 0.0;
     double battery = 0.0;
     double longitude = 0.0;
     double latitude = 0.0;
@@ -47,8 +50,6 @@ struct Telemetry
     int fg_update_status = 0;
 
     double fg_temp = 0.0;
-    double amperage = 0.0;
-    double voltage = 0.0;
 
     bool fg_flag_fc = false;
     bool fg_flag_qen = false;

@@ -11,18 +11,18 @@ Item {
     anchors.fill: parent;
     anchors.margins: 8;
 
-    property var controller: Controllers.image;
+    property var controller: Controllers.remote;
 
     function save() {
-        Controllers.image.setPipelines(
+        Controllers.remote.setPipelines(
             watermarkEdit.text
         );
 
-        Controllers.image.saveSpeedLimits();
+        Controllers.remote.saveSpeedLimits();
     }
 
     function load() {
-        var pipes = Controllers.image.getPipelines();
+        var pipes = Controllers.remote.getPipelines();
         watermarkEdit.text = pipes[3];
     }
 
@@ -70,19 +70,19 @@ Item {
                         to: 100;
                         stepSize: 5;
                         snapMode: Slider.SnapAlways;
-                        value: Controllers.image.getSpeedLimits()[index];
+                        value: Controllers.remote.getSpeedLimits()[index];
 
                         onValueChanged: {
                             let min = index == 0 ? 0 :
-                                      index == 1 ? Controllers.image.speedLimits[0] :
-                                                   Controllers.image.speedLimits[1] ;
+                                      index == 1 ? Controllers.remote.speedLimits[0] :
+                                                   Controllers.remote.speedLimits[1] ;
 
-                            let max = index == 0 ? Controllers.image.speedLimits[1] :
-                                      index == 1 ? Controllers.image.speedLimits[2] :
+                            let max = index == 0 ? Controllers.remote.speedLimits[1] :
+                                      index == 1 ? Controllers.remote.speedLimits[2] :
                                                    100;
 
                             value = Math.max(Math.min(value, max), min);
-                            Controllers.image.setSpeedLimit(index, value);
+                            Controllers.remote.setSpeedLimit(index, value);
                         }
                     }
 
@@ -123,7 +123,7 @@ Item {
 
                 UiCheckbox {
                     label.text: "Enable watermark";
-                    from: Controllers.image;
+                    from: Controllers.remote;
                     bind: "watermarkOn";
                 }
             }

@@ -50,7 +50,7 @@ Item {
     Connections {
         target: Controllers.network;
 
-        onConnectedChanged: function() {
+        function onConnectedChanged() {
             if (last.connected === Controllers.network.connected || Controllers.network.connected === true) return;
 
             if (!Controllers.network.connected) {
@@ -60,7 +60,7 @@ Item {
             last.connected = Controllers.network.connected;
         }
 
-        onTelemetryUpdated: function() {
+        function onTelemetryUpdated() {
             if (last.connected === Controllers.network.connected || Controllers.network.connected === false) return;
 
             if (Controllers.network.connected) {
@@ -75,7 +75,7 @@ Item {
             last.connected = Controllers.network.connected;
         }
 
-        onIs_chargingChanged: function() {
+        function onIs_chargingChanged() {
             if (last.is_charging === Controllers.network.is_charging) return;
 
             if (Controllers.network.is_charging) {
@@ -87,7 +87,7 @@ Item {
             last.is_charging = Controllers.network.is_charging;
         }
 
-        onNotificationReceived: function(status, msg) {
+        function onNotificationReceived(status, msg) {
             if (msg === "run_when_charging") {
                 notify(status, "Motors disabled!", "Please, unplug charger before run");
             }
@@ -101,7 +101,7 @@ Item {
     }
 
     Connections {
-        target: Controllers.image.Joystick;
+        target: Controllers.remote.Joystick;
         function onJoystickConnectedChanged(connected) {
             if (connected) {
                 notify("ok", "Gamepad connected", "", fa.icons.fa_gamepad, true);
@@ -112,9 +112,9 @@ Item {
     }
 
     Connections {
-        target: Controllers.image;
+        target: Controllers.remote;
         function onRecordingVideoChanged() {
-            if (Controllers.image.recordingVideo) {
+            if (Controllers.remote.recordingVideo) {
                 notify("info", "Recording video", "", fa.icons.fa_circle, true, 1500);
             } else {
                 notify("info", "Recording stopped", "", fa.icons.fa_stop, true, 1500);

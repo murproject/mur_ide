@@ -16,6 +16,11 @@ void ApplicationLogger::addEntry(const QString &string)
     emit outputChanged();
 }
 
+void ApplicationLogger::addScriptOutput(const QString &string){
+    m_output += string;
+    emit outputChanged();
+}
+
 void ApplicationLogger::addOutput(const QString &output, const QString &error)
 {
     m_output += output;

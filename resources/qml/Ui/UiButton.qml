@@ -22,6 +22,7 @@ Rectangle {
     property bool frameless: false;
     property string toolTip: "";
     property bool outline: fullWindow.visible ? true : false;
+    property bool setFocus: true;
 
     opacity: visible ? 1.0 : 0.0;
 
@@ -85,7 +86,9 @@ Rectangle {
         hoverEnabled: true;
 
         onClicked: {
-            root.forceActiveFocus();
+            if (setFocus) {
+                root.forceActiveFocus();
+            }
             root.clicked();
         }
 
@@ -99,6 +102,8 @@ Rectangle {
         text: qsTr(root.toolTip);
         delay: 1000
         timeout: 5000
+        palette.toolTipBase: Style.white;
+        palette.toolTipText: Style.bgDarker;
     }
 
     Shortcut {

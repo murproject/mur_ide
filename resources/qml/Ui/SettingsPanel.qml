@@ -70,6 +70,10 @@ Popup {
             SettingsGamepad {
                 id: settingsGamepad;
             }
+
+            SettingsKeyboard {
+                id: settingsKeyboard;
+            }
         }
     }
 
@@ -84,6 +88,7 @@ Popup {
             label.font.bold: true;
             onClicked: {
                 settingsGamepad.save();
+                settingsKeyboard.save();
                 settingsPopup.close();
             }
             visible: !settingsTabs.visibleItem.restartRequired;
@@ -100,6 +105,7 @@ Popup {
                 settingsOkButton.click();
                 settingsRemote.save();
                 settingsNetwork.save();
+                settingsKeyboard.save();
             }
         }
     }

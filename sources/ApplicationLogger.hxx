@@ -15,6 +15,7 @@ public:
     static ApplicationLogger *Create();
 
     void addEntry(const QString &);
+    void addScriptOutput(const QString &);
     void addOutput(const QString &, const QString &);
     QString getOutput();
 
