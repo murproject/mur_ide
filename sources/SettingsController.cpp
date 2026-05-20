@@ -94,4 +94,4 @@ QString SettingsController::getSettingsLocation() {
   return settings->fileName();
 }
 
-} // namespace Ide::Ui
+}
