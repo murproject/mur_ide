@@ -53,6 +53,10 @@ SettingsController::SettingsController()
 
         if (!isValidPath(m_pythonPath)) {
             m_pythonPath = "venv/bin/python3";
+
+            if (!isValidPath(m_pythonPath)) {
+                m_pythonPath = "/usr/bin/python3";
+            }
         }
 
         if (!isValidPath(m_simulatorPath)) {
